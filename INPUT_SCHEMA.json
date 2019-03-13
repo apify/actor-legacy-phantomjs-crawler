@@ -1,0 +1,361 @@
+{
+  "title": "Schema for the apify/phantomjs-extractor actor",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "startUrls": {
+      "title": "Start URLs",
+      "type": "array",
+      "nullable": false,
+      "description": "List of URLs that will be loaded by the crawler on start. For a POST request, append [POST] to the URL, e.g. <code>http://www.example.com/[POST]</code>",
+      "editor": "keyValue",
+      "placeholderKey": "Optional label",
+      "placeholderValue": "URL",
+      "prefill": [
+        {
+          "key": "START",
+          "value": "https://www.example.com/"
+        }
+      ]
+    },
+
+    "crawlPurls": {
+      "title": "Pseudo-URLs",
+      "type": "array",
+      "nullable": true,
+      "description": "Specifies URLs of pages to crawl. Put regular expressions in [ ] brackets, e.g. <code>http://www.example.com/[.*]</code>",
+      "editor": "keyValue",
+      "placeholderKey": "Optional label",
+      "placeholderValue": "Pseudo-URL",
+      "prefill": [
+        {
+          "key": "MY_LABEL",
+          "value": "https://www.example.com/[.*]"
+        }
+      ]
+    },
+
+    "clickableElementsSelector": {
+      "title": "Clickable elements",
+      "type": "string",
+      "nullable": true,
+      "description": "CSS selector used to find links to other web pages. Leave empty to ignore all links.",
+      "editor": "textfield",
+      "prefill": "a:not([rel=nofollow])"
+    },
+
+    "pageFunction": {
+      "title": "Page function",
+      "type": "string",
+      "nullable": true,
+      "description": "JavaScript function that is executed on every crawled page, use it to extract data from it.",
+      "prefill": "function pageFunction(context) {\n    // called on every page the crawler visits, use it to extract data from it\n    var $ = context.jQuery;\n    var result = {\n        title: $('title').text(),\n        myValue: $('TODO').text()\n    };\n    return result;\n}\n",
+      "editor": "javascript"
+    },
+
+    "interceptRequest": {
+      "title": "Intercept request function",
+      "type": "string",
+      "nullable": true,
+      "description": "JavaScript function called whenever the crawler finds a link or form leading to a new web page.",
+      "prefill": "function interceptRequest(context, newRequest) {\n    // called whenever the crawler finds a link to a new page,\n    // use it to override default behavior\n    return newRequest;\n}\n",
+      "editor": "javascript"
+    },
+
+    "considerUrlFragment": {
+      "title": "URL #fragments identify unique pages",
+      "type": "boolean",
+      "nullable": true,
+      "description": "Indicates that the URL fragment identifier (i.e. <code>http://example.com/page#<b>this-guy-here</b></code>) should be considered when matching an URL against a Pseudo-URL or when checking whether a page has already been visited. Typically, URL fragments are used as internal page anchors and therefore they should be ignored because they don't represent separate pages. However, many AJAX-based website nowadays use URL fragment to represent page parameters; in such cases, this option should be enabled.",
+      "default": false,
+      "groupCaption": "Options",
+      "groupDescription": "Various crawler settings"
+    },
+
+    "loadImages": {
+      "title": "Download HTML images",
+      "type": "boolean",
+      "nullable": true,
+      "description": "Indicates whether the crawler should load HTML images, both those included using the <code>&lt;img&gt;</code> tag as well as those included in CSS styles. Disable this feature after you have fine-tuned your crawler in order to increase crawling performance and reduce your bandwidth costs.",
+      "default": true
+    },
+
+    "loadCss": {
+      "title": "Download CSS files",
+      "type": "boolean",
+      "nullable": true,
+      "description": "Indicates whether the crawler should load CSS stylesheet files. Disable this feature after you have fine-tuned your crawler in order to increase crawling performance and reduce your bandwidth costs.",
+      "default": true
+    },
+
+    "injectJQuery": {
+      "title": "Inject jQuery",
+      "type": "boolean",
+      "nullable": true,
+      "description": "Indicates that the <a href='http://jquery.com' target='_blank' rel='noopener'>jQuery</a> library should be injected to each page before <b>Page function</b> is invoked. Note that the jQuery object will not be registered into global namespace in order to avoid conflicts with libraries used by the web page. It can only be accessed through <code>context.jQuery</code>.",
+      "default": true
+    },
+
+    "injectUnderscoreJs": {
+      "title": "Inject Underscore.js",
+      "type": "boolean",
+      "nullable": true,
+      "description": "Indicates that the <a href='http://underscorejs.org' target='_blank' rel='noopener'>Underscore.js</a> library should be injected to each page before <b>Page function</b> is invoked. Note that the Underscore object will not be registered into global namespace in order to avoid conflicts with libraries used by the web page. It can only be accessed through <code>context.underscoreJs</code>.",
+      "default": false
+    },
+
+    "ignoreRobotsTxt": {
+      "title": "Ignore robots exclusion standards",
+      "type": "boolean",
+      "nullable": true,
+      "description": "Indicates that the crawler should ignore <code>robots.txt</code>, <code>&lt;meta name='robots'&gt;</code> tags and <code>X-Robots-Tag</code> HTTP headers. Use this feature at your own risk!",
+      "default": false
+    },
+
+    "skipLoadingFrames": {
+      "title": "Don't load frames and IFRAMEs",
+      "type": "boolean",
+      "nullable": true,
+      "description": "Indicates that child frames included using FRAME or IFRAME tags will not be loaded by the crawler. This might improve crawling performance. As a side-effect, JavaScript redirects issued by the page before it was completely loaded will not be performed, which might be useful in certain situations.",
+      "default": false
+    },
+
+    "verboseLog": {
+      "title": "Verbose log",
+      "type": "boolean",
+      "nullable": true,
+      "description": "If enabled, the log will also contain DEBUG messages. Note that this setting will dramatically slow down the crawler as well as your web browser and increase the log size.",
+      "default": false
+    },
+
+    "disableWebSecurity": {
+      "title": "Disable web security",
+      "type": "boolean",
+      "nullable": true,
+      "description": "If checked, the virtual browser will allow cross-domain XHRs and untrusted SSL certificates, so that your crawler can access content from any domain. Only activate this feature if you know what you're doing!",
+      "default": false
+    },
+
+    "rotateUserAgents": {
+      "title": "Rotate User-Agent headers",
+      "type": "boolean",
+      "nullable": true,
+      "description": "If checked then the crawler automatically rotates the <code>User-Agent</code> HTTP header for each new IP address, from a pre-defined list. This settings overwrites <code>User-Agent</code> set in <b>Custom HTTP headers</b>.",
+      "default": false
+    },
+
+    "maxCrawledPages": {
+      "title": "Max pages per crawl",
+      "type": "integer",
+      "nullable": true,
+      "description": "Maximum number of pages that the crawler will open. The crawl will stop when this limit is reached. Always set this value in order to prevent infinite loops in misconfigured crawlers. Note that in cases of parallel crawling, the actual number of pages visited might be slightly higher than this value.",
+      "minimum": 1,
+      "maximum": 999999999,
+      "unit": "pages"
+    },
+
+    "maxOutputPages": {
+      "title": "Max result records",
+      "type": "integer",
+      "nullable": true,
+      "description": "Maximum number of pages the crawler can output to JSON. The crawl will stop when this limit is reached. This value is useful when you only need a limited number of results.",
+      "minimum": 1,
+      "maximum": 999999999,
+      "unit": "pages"
+    },
+
+    "maxCrawlDepth": {
+      "title": "Max crawling depth",
+      "type": "integer",
+      "nullable": true,
+      "description": "Defines how many links away from the start URLs the crawler will descend. This value is a safeguard against infinite crawling depths on misconfigured crawlers. Note that pages added using <code>enqueuePage()</code> in <b>Page function</b> are not subject to the maximum depth constraint.",
+      "minimum": 1,
+      "maximum": 999999999,
+      "unit": "links"
+    },
+
+    "timeout": {
+      "title": "Execution timeout",
+      "type": "integer",
+      "nullable": true,
+      "editor": "hidden",
+      "description": "This field was deprecated. To set the execution timeout, use the actor run timeout option instead.",
+      "minimum": 1,
+      "maximum": 1814400,
+      "default": 604800,
+      "unit": "seconds"
+    },
+
+    "resourceTimeout": {
+      "title": "Resource timeout",
+      "type": "integer",
+      "nullable": true,
+      "description": "Timeout for network resources loaded by the crawler, in milliseconds.",
+      "minimum": 100,
+      "maximum": 1000000,
+      "default": 30000,
+      "unit": "milliseconds"
+    },
+
+    "pageLoadTimeout": {
+      "title": "Page load timeout",
+      "type": "integer",
+      "nullable": true,
+      "description": "Timeout for web page load, in milliseconds. If the web page does not load in this time frame, it is considered to have failed and will be retried, similarly as with other page load errors.",
+      "minimum": 100,
+      "maximum": 1000000,
+      "default": 60000,
+      "unit": "milliseconds"
+    },
+
+    "pageFunctionTimeout": {
+      "title": "Page function timeout",
+      "type": "integer",
+      "nullable": true,
+      "description": "Timeout for the asynchronous part of the <b>Page function</b>, in milliseconds. Note that this value is only applied if your page function runs code in the background, i.e. when it invokes <code>context.willFinishLater()</code>; the page function itself always runs to completion regardless of the timeout.",
+      "minimum": 0,
+      "maximum": 3600000,
+      "default": 600000,
+      "unit": "milliseconds"
+    },
+
+    "maxInfiniteScrollHeight": {
+      "title": "Infinite scroll height",
+      "type": "integer",
+      "nullable": true,
+      "description": "The maximum client height in pixels to which the browser window is scrolled to fetch a dynamic content. You might need to enable HTML images to make this work. If not set, no scrolling is performed.",
+      "minimum": 0,
+      "maximum": 1000000,
+      "unit": "pixels"
+    },
+
+    "randomWaitBetweenRequests": {
+      "title": "Delay between requests",
+      "type": "integer",
+      "nullable": true,
+      "description": "This option forces the crawler to wait before opening every page.",
+      "minimum": 1000,
+      "maximum": 1000000,
+      "default": 1000,
+      "unit": "milliseconds"
+    },
+
+    "maxCrawledPagesPerSlave": {
+      "title": "Max pages per IP address",
+      "type": "integer",
+      "nullable": true,
+      "description": "Maximum number of pages that a single crawling process will open before it is restarted with a new proxy server setting. This option can help avoid the blocking of the crawler by the target server and also ensures that the crawling processes don't grow too large, as they are killed periodically.",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 50,
+      "unit": "milliseconds"
+    },
+
+    "maxParallelRequests": {
+      "title": "Max parallel processes",
+      "type": "integer",
+      "nullable": true,
+      "description": "The maximum number of parallel processes that will perform the crawl. The actual number might be lower if the actor runs with not enough memory. Note that each parallel process uses a different proxy (if enabled).",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 50
+    },
+
+    "maxPageRetryCount": {
+      "title": "Max page retries",
+      "type": "integer",
+      "nullable": true,
+      "description": "The maximum number of times the crawler will retry to load a page on error.",
+      "minimum": 0,
+      "maximum": 10,
+      "default": 3
+    },
+
+    "customHttpHeaders": {
+      "title": "Custom HTTP headers",
+      "type": "array",
+      "nullable": true,
+      "description": "Custom HTTP headers set by the crawler to all requests. It's an array of objects, where each object has the <code>key</code> and <code>value</code> properties.",
+      "editor": "keyValue",
+      "placeholderKey": "Name",
+      "placeholderValue": "Value"
+    },
+
+    "proxyConfiguration": {
+      "title": "Proxy configuration",
+      "type": "object",
+      "nullable": false,
+      "description": "Specifies the type of proxy servers that will be used by the crawler in order to hide its origin.",
+      "editor": "proxy"
+    },
+
+    "proxyType": {
+      "title": "Proxy type (legacy)",
+      "type": "string",
+      "nullable": true,
+      "description": "Specifies the type of proxy servers that will be used by the crawler.<br><br>This is a legacy option only kept for backwards compatibility, use <b>proxyConfiguration</b> instead!",
+      "editor": "hidden"
+    },
+
+    "proxyGroups": {
+      "title": "Proxy groups (legacy)",
+      "type": "array",
+      "nullable": true,
+      "description": "Specifies Apify Proxy groups to be used when <b>proxyType</b> is <code>SELECTED_PROXY_GROUPS</code>.<br><br>This is a legacy option only kept for backwards compatibility, use <b>proxyConfiguration</b> instead!",
+      "editor": "hidden",
+      "default": []
+    },
+
+    "customProxies": {
+      "title": "Custom proxies (legacy)",
+      "type": "string",
+      "nullable": true,
+      "description": "Specifies Apify Proxy groups to be used when <b>proxyType</b> is <code>CUSTOM</code>. Each proxy should be specified in the <code>scheme://user:password@host:port</code> format, multiple proxies should be separated by a space or new line. <br><br>This is a legacy option only kept for backwards compatibility, use <b>proxyConfiguration</b> instead!",
+      "editor": "hidden"
+    },
+
+    "customData": {
+      "title": "Custom data",
+      "type": "string",
+      "nullable": true,
+      "description": "A custom string that is passed to <b>Page function</b> and intercept request function as <code>context.customData</code>.",
+      "editor": "textfield"
+    },
+
+    "cookies": {
+      "title": "Initial cookies",
+      "type": "array",
+      "nullable": true,
+      "description": "JSON array with cookies that the crawler starts with. This is useful for reusing login state from an external web browser.",
+      "editor": "json"
+    },
+
+    "cookiesPersistence": {
+      "title": "Cookies persistence",
+      "type": "string",
+      "nullable": true,
+      "description": "Indicates how cookies collected by the crawler are persisted. This is useful if you need to maintain a login.",
+      "editor": "select",
+      "default": "PER_PROCESS",
+      "enum": ["PER_PROCESS", "PER_CRAWLER_RUN", "OVER_CRAWLER_RUNS"],
+      "enumTitles": ["Per single crawling process only", "Per full crawler run", "Over all crawler runs"]
+    },
+
+    "finishWebhookUrl": {
+      "title": "Finish webhook URL",
+      "type": "string",
+      "nullable": true,
+      "editor": "hidden",
+      "description": "A HTTP endpoint that receives a POST request right after every run of this crawler finishes.<br><br>This field is kept just for backwards compatibility with legacy Crawler API. Please use standard actor webhooks instead."
+    },
+
+    "finishWebhookData": {
+      "title": "Finish webhook data",
+      "type": "string",
+      "nullable": true,
+      "editor": "hidden",
+      "description": "Custom string that is sent in the payload of the finish webhook HTTP request.<br><br>This field is kept just for backwards compatibility with legacy Crawler API. Please use standard actor webhooks instead."
+    }
+  },
+  "required": []
+}

@@ -111,8 +111,8 @@ Contains a CSS selector used to find links to other web pages.
 The crawler clicks all DOM elements matching this selector
 and then monitors whether the page generates a navigation request.
 If a navigation request is detected, the crawler checks whether it matches
-<a href="#crawlPurls">Pseudo-URLs</a>,
-invokes <a href="#interceptRequest">Intercept request function</a>,
+<a href="#crawl-purls">Pseudo-URLs</a>,
+invokes <a href="#intercept-request">Intercept request function</a>,
 cancels the request and then continues clicking the next matching elements.
 By default, new crawlers are created with a safe CSS selector:
 
@@ -134,7 +134,7 @@ In principle, the safest option is to narrow the CSS selector to as few elements
 which also makes the crawler run much faster.
 
 Leave this field empty if you do not want the crawler to click any elements and only open
-<a href="#startUrls">Start URLs</a>
+<a href="#start-urls">Start URLs</a>
 or pages enqueued using <code>enqueuePage()</code>.
 
 
@@ -146,7 +146,7 @@ Page function is typically used to extract some data from the page, but it can a
 to perform some non-trivial
 operation on the page, e.g. handle AJAX-based pagination.
 
-<b>IMPORTANT:</b> Apify is currently using <a href="http://phantomjs.org/" target="_blank" rel="noopener">PhantomJS</a>
+<b>IMPORTANT:</b> This actor is using <a href="http://phantomjs.org/" target="_blank" rel="noopener">PhantomJS</a>
 headless web-browser, which only supports JavaScript ES5.1 standard
 (read more in a <a href="https://ariya.io/2014/08/phantomjs-2-and-javascript-goodies" target="_blank" rel="noopener">blog post about PhantomJS 2.0</a>).
 
@@ -160,7 +160,7 @@ function pageFunction(context) {
 
 The function can return an arbitrary JavaScript object (including array, string, number, etc.) that can be stringified to JSON;
 this value will be saved in the crawling results as the <code>pageFunctionResult</code>
-field of the <a href="#requestObject">Request object</a> corresponding to the web page
+field of the <a href="#request-object">Request object</a> corresponding to the web page
 on which the <code>pageFunction</code> was executed.
 Note that Apify provides crawling results in a computer-friendly form (JSON, JSONL, XML or RSS format),
 as well as in a human-friendly tabular form (HTML or CSV format).
@@ -182,13 +182,13 @@ which is an object with the following properties and functions:
     <tr>
         <td id="context-request"><code>request</code></td>
         <td>An object holding all the available information about the currently loaded web page.
-            See <a href="#requestObject">Request object</a> for details.
+            See <a href="#request-object">Request object</a> for details.
         </td>
     </tr>
     <tr>
         <td id="context-jQuery"><code>jQuery</code></td>
         <td>A jQuery object, only available if the
-            <a href="#injectJQuery">Inject jQuery</a>
+            <a href="#inject-jquery">Inject jQuery</a>
             setting is
             enabled. <!--<?php/* TODO: Although the web page can include jQuery, you shouldnt.. */-->
         </td>

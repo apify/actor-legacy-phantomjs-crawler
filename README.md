@@ -1,135 +1,87 @@
 # Legacy PhantomJS Crawler
 
-The actor is 
-Apify actor with the legacy PhantomJS crawler
-
-The actor supports the same input as the legacy crawler,
+Apify actor implementation of the legacy Apify crawler. The actor supports the same input as the original crawler,
 so you can call it the same way as the old one.
 
+Apify provides a hosted web crawler for developers. Technically speaking, it is a bunch of web browsers hosted on Apify
+servers that enable you to scrape data from any website using the primary programming language of the web: JavaScript.
 
+In order to extract structured data from a website, you only need two things. First, tell the crawler which pages it
+should visit (see <a href="#start-urls">Start URLs</a> and <a href="#crawl-purls">Pseudo-URLs</a>) and second, define
+a JavaScript code that will be executed on every web page visited in order to extract the data from it
+(see <a href="#page-function">Page function</a>).
+The crawler is a full-featured web browser which loads and interprets JavaScript and the code you provide is simply
+executed in the context of the pages it visits. This means that writing your data-extraction code is very similar
+to writing JavaScript code in front-end development, you can even use any client-side libraries such as
+<a href="http://jquery.com" target="_blank" rel="noopener">jQuery</a> or
+<a href="http://underscorejs.org" target="_blank" rel="noopener">Underscore.js</a>.
 
+Imagine the crawler as a guy sitting in front of a web browser. Let's call him Bob. Bob opens a start URL and waits
+for the page to load, executes your JavaScript code using a developer console, writes down the result and then
+right-clicks all links on the web page to open them in new browser tabs.
+After that, Bob closes the current tab, goes to the next tab and repeats the same action again.
+Bob is pretty smart and skips pages that he has already visited.
+When there are no more pages, he is done. And this is where the magic happens.
+Bob would need about a month to click through a few hundred pages.
+Apify can do it in a few seconds and makes fewer mistakes.
 
-<p>Apify provides a hosted web crawler for developers.
-  Technically speaking, it is a bunch of web browsers hosted
-  on Apify servers that enable you to scrape data from any website using the
-  primary programming language of the web: JavaScript.</p>
+More formally, the crawler repeats the following steps:
 
+<ol>
+    <li>Add each of the <a href="#start-urls">Start URLs</a> into the crawling queue.</li>
+    <li>Fetch the first URL from the queue and load it in the virtual browser.</li>
+    <li>Execute <a href="#page-function">Page function</a> on the loaded page and save its results.</li>
+    <li>Find all links from the page using <a href="#clickable-elementsSelector">Clickable elements</a> CSS selector.
+        If a link matches any of the <a href="#crawl-purls">Pseudo-URLs</a> and has not yet been enqueued, add it to the queue.</li>
+    <li>If there are more items in the queue, go to step 2, otherwise finish.</li>
+</ol>
 
-<!--
-<p>
-    This document describes all the features of the crawler.
-    You might also want to check out the following resources:
-</p>
+This process is depicted in the following diagram.
+Note that blue elements represent settings or operations that can be affected by crawler settings.
+These settings are described in detail in the following sections.
 
-<ul>
-    <li>
-        <a href="https://www.youtube.com/apify" target="_blank" rel="noopener"><b>Video tutorials</b></a>
-        - step-by-step video tutorials for beginners
-    </li>
-    <li>
-        <a href="https://kb.apify.com" target="_blank" rel="noopener"><b>Knowledge base</b></a>
-        - examples, tutorials and various tips &amp; tricks
-    </li>
-    <li>
-        <a href="https://forum.apify.com/" target="_blank" rel="noopener"><b>Forum</b></a>
-        - community forum, FAQ
-    </li>
-</ul>
--->
-
-<p>
-    In order to extract structured data from a website, you only need two things. First, tell
-    the crawler which pages it should visit
-    (see <a href="#startUrls">Start URLs</a>
-    and <a href="#crawlPurls">Pseudo-URLs</a>)
-    and second, define a JavaScript code that will be executed on every web page visited
-    in order to extract the data from it
-    (see <a href="#pageFunction">Page function</a>).
-    The crawler is a full-featured web browser which loads and interprets JavaScript
-    and the code you provide is simply executed in the context of the pages it visits.
-    This means that writing your data-extraction code is very similar to writing JavaScript
-    code in front-end development, you can even use any client-side libraries
-    such as <a href="http://jquery.com" target="_blank" rel="noopener">jQuery</a> or
-    <a href="http://underscorejs.org" target="_blank" rel="noopener">Underscore.js</a>.
-</p>
-<p>
-    Imagine the crawler as a guy sitting in front of a web browser. Let's call him Bob.
-    Bob opens a start URL and waits for the page to load, executes your JavaScript code
-    using a developer console, writes down the result and then right-clicks
-    all links on the web page to open them in new browser tabs.
-    After that, Bob closes the current tab, goes to the next tab and repeats the same action
-    again.
-    Bob is pretty smart and skips pages that he has already visited.
-    When there are no more pages, he is done. And this is where the magic happens.
-    Bob would need about a month to click through a few hundred pages. Apify
-    can do it in a few seconds and makes fewer mistakes.
-</p>
-<p>
-    More formally, the crawler repeats the following steps:
-</p>
-    <ol>
-        <li>Add each of the <a href="#startUrls">Start URLs</a> into the crawling queue.</li>
-        <li>Fetch the first URL from the queue and load it in the virtual browser.</li>
-        <li>Execute <a href="#pageFunction">Page function</a> on the loaded page and save its results.</li>
-        <li>Find all links from the page using <a href="#clickableElementsSelector">Clickable elements</a> CSS selector.
-            If a link matches any of the <a href="#crawlPurls">Pseudo-URLs</a> and has not yet been enqueued, add it to the queue.</li>
-        <li>If there are more items in the queue, go to step 2, otherwise finish.</li>
-    </ol>
-<p>
-    This process is depicted in the following diagram.
-    Note that blue elements represent settings or operations that can be affected by crawler settings.
-    These settings are described in detail in the following sections.
-</p>
-<p class="text-center">
-    <a href="/img/crawler-activity-diagram.001.png" target="_blank" rel="noopener"><img
-        src="/img/crawler-activity-diagram.001.png" alt="Web crawler activity diagram"
+<center>
+    <a href="https://raw.githubusercontent.com/apifytech/actor-legacy-phantomjs-crawler/master/img/crawler-activity-diagram.001.png" target="_blank" rel="noopener"><img
+        src="https://raw.githubusercontent.com/apifytech/actor-legacy-phantomjs-crawler/master/img/crawler-activity-diagram.001.png" alt="Web crawler activity diagram"
         class="img-responsive"/></a>
-</p>
-<p>
-    Note that each crawler configuration setting can also be
-    set using the API, the corresponding property name and type is
-    <span class="api-field-name">{described in this font}</span>
-    right next to the property caption. When you export the crawler settings to JSON,
-    the object will have these properties.
-    For details, see the API section on the crawler details page.
-</p>
+</center>
+
+Note that each crawler configuration setting can also be set using the API, the corresponding property name and type is
+`{described in this font}` right next to the property caption. When you export the crawler settings to JSON,
+the object will have these properties. For details, see the API section on the crawler details page.
 
 ## Start URLs
 
 Represents the list of URLs of the first pages that the crawler will open.
 Optionally, each URL can be associated with a custom label that can be referenced from
 your JavaScript code to determine which page is currently open
-(see <a href="#requestObject">Request object</a> for details).
-Each URL must start with either a
-<code>http://</code> or <code>https://</code>
-protocol prefix!
+(see <a href="#request-object">Request object</a> for details).
+Each URL must start with either a `http://` or `https://` protocol prefix!
 
 Note that it is possible to instruct the crawler to load a URL using a HTTP POST request
-simply by suffixing it with a <code>[POST]</code> marker, optionally followed by
-POST data (e.g. <code>http://www.example.com[POST]<wbr>key1=value1&key2=value2</code>).
+simply by suffixing it with a `[POST]` marker, optionally followed by
+POST data (e.g. `http://www.example.com[POST]<wbr>key1=value1&key2=value2`).
 By default, POST requests are sent with
-the <code>Content-Type: application/x-www-form-urlencoded</code> header.
+the `Content-Type: application/x-www-form-urlencoded` header.
 
-Maximum label length is 100 characters
-and maximum URL length is 2000 characters.
+Maximum label length is 100 characters and maximum URL length is 2000 characters.
 
 ## Pseudo-URLs
 
 Specifies which pages will be visited by the crawler using a <i>pseudo-URLs</i> (PURL)
-format.
-PURL is simply a URL with special directives enclosed in <code>[]</code> brackets.
-Currently, the only supported directive is <code>[regexp]</code>, which defines
+format. PURL is simply a URL with special directives enclosed in `[]` brackets.
+Currently, the only supported directive is `[regexp]`, which defines
 a JavaScript-style regular expression to match against the URL.
 
-For example, a PURL <code>http://www.example.com/pages/[(\w|-)*]</code> will match all of the
+For example, a PURL `http://www.example.com/pages/[(\w|-)*]` will match all of the
 following URLs:
 
 - `http://www.example.com/pages/`
 - `http://www.example.com/pages/my-awesome-page`
 - `http://www.example.com/pages/something`
 
-If either <code>[</code> or <code>]</code> is part of the normal query string,
-it must be encoded as <code>[\x5B]</code> or <code>[\x5D]</code>, respectively. For example,
+If either `[` or `]` is part of the normal query string,
+it must be encoded as `[\x5B]` or `[\x5D]`, respectively. For example,
 the following PURL:
 
 ```
@@ -142,18 +94,16 @@ will match the URL:
 http://www.example.com/search?do[load]=1
 ```
 
-
 Optionally, each PURL can be associated with a custom label that can be referenced from
 your JavaScript code to determine which page is currently open
-(see <a href="#requestObject">Request object</a> for details).
+(see <a href="#request-object">Request object</a> for details).
 
 Note that you don't need to use this setting at all,
 because you can completely control which pages the crawler will access using the
-<a href="#interceptRequest">Intercept request function</a>.
+<a href="#intercept-request">Intercept request function</a>.
 
 Maximum label length is 100 characters
 and maximum PURL length is 1000 characters.
-
 
 ## Clickable elements
 
@@ -169,7 +119,7 @@ By default, new crawlers are created with a safe CSS selector:
 ```
 a:not([rel=nofollow])
 ```
-    
+
 In order to reach more pages, you might want to use a wider CSS selector, such as:
 
 ```
@@ -549,15 +499,15 @@ TODO:
             intervals than 1000 milliseconds.
         </p>
     </section>
-    
-    
+
+
 ## Proxies
 
 TODO!!!
 
 Specifies the type of proxy servers that will be used by the crawler in order to hide its origin.
 The following table lists all available options:
-        
+
         <p>
             Specifies the type of proxy servers that will be used by the crawler in order to hide its origin.
             The following table lists all available options:
@@ -624,10 +574,10 @@ The following table lists all available options:
             and then enter the proxy servers into the
             <a href="#customProxies">{{ crawlerSchema.customProxies.caption }}</a> field.
         </p>
-    
-    
-    
-    
+
+
+
+
         <h3><a href="#customProxies"><i class="fa fa-link" aria-hidden="true"></i></a>{{{ crawlerFieldCaption "customProxies" }}}</h3>
         <p>
             <i>This field is only available for the <b>Custom proxies</b> option of the <a href="#proxyType">{{ crawlerSchema.proxyType.caption }}</a> field.</i>
@@ -648,11 +598,11 @@ http://bob:password@proxy2.example.com:8000</code></pre>
             If you want to combine your custom proxies with <a href="./proxy">Apify Proxy</a> groups, or if you wish to use the Apify Proxy
             rotation and proxy selection system for your custom proxies, please let us know at <a href="mailto:support@apify.com">support@apify.com</a>.
         </p>
-        
-        
+
+
 ## Cookies
 
-    
+
         <h3><a href="#cookies"><i class="fa fa-link" aria-hidden="true"></i></a>{{{ crawlerFieldCaption "cookies" }}}</h3>
         <p>
             An array of cookies used to initialize the crawler.
@@ -758,7 +708,7 @@ http://bob:password@proxy2.example.com:8000</code></pre>
             but when passing it through the API it can be an arbitrary JSON-stringifyable object.
         </p>
     </section>
-    
+
 
 
 

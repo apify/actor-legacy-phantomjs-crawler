@@ -473,6 +473,8 @@ on the return value of the <code>interceptRequest</code> function in the followi
 
 ## Proxies
 
+### Option `proxyType`
+
 Specifies the type of proxy servers that will be used by the crawler in order to hide its origin.
 The following table lists all available options:
 
@@ -523,25 +525,25 @@ Note that for security reasons, the usernames and passwords are redacted from th
 ### Option `proxyGroups`
 
 <p>
-    <i>This field is only available for the <b>Selected proxy groups</b> option of the <a href="#proxyType">{{ crawlerSchema.proxyType.caption }}</a> field.</i>
+    <i>This field is only available for the <b>Selected proxy groups</b> option of the <a href="#option-proxyType">proxy type</a> field.</i>
 </p>
 <p>
-    The crawler will use <a href="./proxy">Apify Proxy</a> with target proxies from the selected proxy groups.
+    The crawler will use <a href="https://apify.com/proxy">Apify Proxy</a> with target proxies from the selected proxy groups.
     Each new web page will be served by a target proxy server that hasn't been used in the longest time for the specific hostname,
     in order to reduce the chance of detection by the website.
     You can view the list of available groups
-    on the <a href="{{ appBaseUrl }}/proxy" target="_blank" rel="noopener">Proxy</a> page in the app.
+    on the <a href="https://my.apify.com/proxy" target="_blank" rel="noopener">Proxy</a> page in the app.
 </p>
 <p>
-    If you prefer to use your own proxy servers, select the <b>Custom proxies</b> option in the <a href="#proxyType">{{crawlerSchema.proxyType.caption}}</a> field
+    If you prefer to use your own proxy servers, select the <b>Custom proxies</b> option in the <a href="#option-proxyType">proxy type</a> field
     and then enter the proxy servers into the
-    <a href="#customProxies">{{ crawlerSchema.customProxies.caption }}</a> field.
+    <a href="#option-customProxies">custom proxies</a> field.
 </p>
 
 ### Option `customProxies`
 
 <p>
-    <i>This field is only available for the <b>Custom proxies</b> option of the <a href="#proxyType">{{ crawlerSchema.proxyType.caption }}</a> field.</i>
+    <i>This field is only available for the <b>Custom proxies</b> option of the <a href="#option-proxyType">proxy type</a> field.</i>
 </p>
 <p>
     A list of custom proxy servers to be used by the crawler.
@@ -556,7 +558,7 @@ Note that for security reasons, the usernames and passwords are redacted from th
 <pre><code class="language-none">http://bob:password@proxy1.example.com:8000
 http://bob:password@proxy2.example.com:8000</code></pre>
 <p>
-    If you want to combine your custom proxies with <a href="./proxy">Apify Proxy</a> groups, or if you wish to use the Apify Proxy
+    If you want to combine your custom proxies with <a href="https://apify.com/proxy">Apify Proxy</a> groups, or if you wish to use the Apify Proxy
     rotation and proxy selection system for your custom proxies, please let us know at <a href="mailto:support@apify.com">support@apify.com</a>.
 </p>
 
@@ -572,7 +574,7 @@ http://bob:password@proxy2.example.com:8000</code></pre>
     The array might be null or empty, in which case the crawler will start with no cookies.
 </p>
 <p>
-    Note that if the <a href="#cookiesPersistence">{{ crawlerSchema.cookiesPersistence.caption }}</a>
+    Note that if the <a href="#option-cookiesPersistence">cookie persistence</a>
     setting is <b>Over all crawler runs</b>, the cookies array will be overwritten
     with fresh cookies from the crawler whenever it successfully finishes.
 </p>
@@ -583,6 +585,7 @@ http://bob:password@proxy2.example.com:8000</code></pre>
 <p>
     Example:
 </p>
+
 ```json
 [
   {

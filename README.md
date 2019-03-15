@@ -188,7 +188,7 @@ which is an object with the following properties and functions:
     <tr>
         <td id="context-jQuery"><code>jQuery</code></td>
         <td>A jQuery object, only available if the
-            <a href="#inject-jquery">Inject jQuery</a>
+            <strong>Inject jQuery</strong>
             setting is
             enabled. <!--<?php/* TODO: Although the web page can include jQuery, you shouldnt.. */-->
         </td>
@@ -196,7 +196,7 @@ which is an object with the following properties and functions:
     <tr>
         <td id="context-underscoreJs"><code>underscoreJs</code></td>
         <td>The Underscore.js' <code>_</code> object, only available if the
-            <a href="#injectUnderscoreJs">Inject Underscore.js</a>
+            <strong>Inject Underscore.js</strong>
             setting is enabled.
         </td>
     </tr>
@@ -215,7 +215,7 @@ which is an object with the following properties and functions:
             Note that if the page function throws an exception, the <code>skipOutput()</code>
             call is ignored and the page is outputted anyway, so that the user has a chance
             to determine whether there was an error
-            (see <a href="#requestObject">Request object</a>'s <code>errorInfo</code>
+            (see <a href="#request-object">Request object</a>'s <code>errorInfo</code>
             field).
         </td>
     </tr>
@@ -228,7 +228,7 @@ which is an object with the following properties and functions:
             If you use the <code>willFinishLater()</code> function, make sure you also invoke <code>finish()</code>
             or the crawler will wait infinitely for the result and eventually timeout
             after the period specified in
-            <a href="#pageFunctionTimeout">Page function timeout</a>.
+            <strong>Page function timeout</strong>.
             Note that the normal return value of the page function is ignored.
         </td>
     </tr>
@@ -253,7 +253,7 @@ which is an object with the following properties and functions:
             <p>
             Adds a new page request to the crawling queue, regardless of whether it matches
             any of the <a href="#crawlPurls">Pseudo-URLs</a>.
-            The <code>request</code> argument is an instance of the <a href="#requestObject">Request object</a>,
+            The <code>request</code> argument is an instance of the <a href="#request-object">Request object</a>,
             but only the following properties are taken into account:
             <code>url</code>, <code>uniqueKey</code>, <code>label</code>,
             <code>method</code>, <code>postData</code>, <code>contentType</code>,
@@ -263,7 +263,7 @@ which is an object with the following properties and functions:
             <p>
             Note that the manually enqueued page is subject to the same processing
             as any other page found by the crawler. For example,
-            the <a href="#interceptRequest">Intercept request function</a> function
+            the <a href="#intercept-request-function">Intercept request function</a> function
             will be called for the new request, and the page will be checked to see whether it has
             already been visited by the crawler and skipped if so.
             </p>
@@ -284,9 +284,7 @@ which is an object with the following properties and functions:
     </tr>
     <tr>
         <td id="context-customData"><code>customData</code></td>
-        <td>Custom user data from crawler settings.
-            See <a href="#customData">Custom data</a> for details.
-        </td>
+        <td>Custom user data from crawler settings provided via <code>customData</code> input field.</td>
     </tr>
     <tr>
         <td id="context-stats"><code>stats</code></td>
@@ -299,7 +297,7 @@ which is an object with the following properties and functions:
     <tr>
         <td id="context-actExecutionId"><code>actExecutionId</code></td>
         <td>String containing ID of this crawler execution. It might be used to control
-            the crawler using the <a href="/docs/api/v1">API</a>,
+            the crawler using the <a href="http://apify.com/docs/api/v1">API</a>,
             e.g. to stop it or fetch its results.
         </td>
     </tr>

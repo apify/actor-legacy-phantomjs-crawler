@@ -493,127 +493,118 @@ intervals than 1000 milliseconds.
 
 ## Proxies
 
-TODO!!!
-
 Specifies the type of proxy servers that will be used by the crawler in order to hide its origin.
 The following table lists all available options:
 
-        <p>
-            Specifies the type of proxy servers that will be used by the crawler in order to hide its origin.
-            The following table lists all available options:
-        </p>
-        <table class="table table-bordered table-condensed">
-            <tbody>
-            <tr>
-                <th><b>None</b><br><span class="api-field-name">='NONE'</span></td>
-                <td>
-                    Crawler will not use any proxies.
-                    All web pages will be loaded directly from IP addresses of Apify servers running on Amazon Web Services.
-                </td>
-            </tr>
-            <tr>
-                <th><b>Apify Proxy (automatic)</b><br><span class="api-field-name">='AUTO'</span></td>
-                <td>
-                    The crawler will load all web pages using the <a href="./proxy">Apify Proxy</a>
-                    in the automatic mode. In this mode, the proxy uses all proxy groups
-                    that are available to the user, and for each new web page it automatically selects the proxy
-                    that hasn't been used in the longest time for the specific hostname,
-                    in order to reduce the chance of detection by the website.
-                    You can view the list of available proxy groups
-                    on the <a href="{{ appBaseUrl }}/proxy" target="_blank" rel="noopener">Proxy</a> page in the app.
-                </td>
-            </tr>
-            <tr>
-                <th><b>Apify Proxy (selected groups)</b><br><span class="api-field-name">='SELECTED_PROXY_GROUPS'</span></td>
-                <td>
-                    The crawler will load all web pages using the <a href="./proxy">Apify Proxy</a>
-                    with specific groups of target proxy servers.
-                    Please refer to the <a href="#proxyGroups">{{ crawlerSchema.proxyGroups.caption }}</a> section for more details.
-                </td>
-            </tr>
-            <tr>
-                <th><b>Custom proxies</b><br><span class="api-field-name">='CUSTOM'</span></td>
-                <td>
-                    Enables the crawler to use a custom list of proxy servers.
-                    Please refer to the <a href="#customProxies">{{ crawlerSchema.customProxies.caption }}</a>
-                    section for more details.
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <p>
-            Note that the custom proxy used to fetch a specific page
-            is stored to the <code>proxy</code> field of the <a href="#requestObject">Request object</a>.
-            Note that for security reasons, the usernames and passwords are redacted from the proxy URL.
-        </p>
-    </section>
-    <section id="proxyGroups">
-        <h3><a href="#proxyGroups"><i class="fa fa-link" aria-hidden="true"></i></a>{{{ crawlerFieldCaption "proxyGroups" }}}</h3>
-        <p>
-            <i>This field is only available for the <b>Selected proxy groups</b> option of the <a href="#proxyType">{{ crawlerSchema.proxyType.caption }}</a> field.</i>
-        </p>
-        <p>
-            The crawler will use <a href="./proxy">Apify Proxy</a> with target proxies from the selected proxy groups.
-            Each new web page will be served by a target proxy server that hasn't been used in the longest time for the specific hostname,
+<table class="table table-bordered table-condensed">
+    <tbody>
+    <tr>
+        <th><b>None</b><br><span class="api-field-name">='NONE'</span></td>
+        <td>
+            Crawler will not use any proxies.
+            All web pages will be loaded directly from IP addresses of Apify servers running on Amazon Web Services.
+        </td>
+    </tr>
+    <tr>
+        <th><b>Apify Proxy (automatic)</b><br><span class="api-field-name">='AUTO'</span></td>
+        <td>
+            The crawler will load all web pages using the <a href="./proxy">Apify Proxy</a>
+            in the automatic mode. In this mode, the proxy uses all proxy groups
+            that are available to the user, and for each new web page it automatically selects the proxy
+            that hasn't been used in the longest time for the specific hostname,
             in order to reduce the chance of detection by the website.
-            You can view the list of available groups
+            You can view the list of available proxy groups
             on the <a href="{{ appBaseUrl }}/proxy" target="_blank" rel="noopener">Proxy</a> page in the app.
-        </p>
-        <p>
-            If you prefer to use your own proxy servers, select the <b>Custom proxies</b> option in the <a href="#proxyType">{{crawlerSchema.proxyType.caption}}</a> field
-            and then enter the proxy servers into the
-            <a href="#customProxies">{{ crawlerSchema.customProxies.caption }}</a> field.
-        </p>
+        </td>
+    </tr>
+    <tr>
+        <th><b>Apify Proxy (selected groups)</b><br><span class="api-field-name">='SELECTED_PROXY_GROUPS'</span></td>
+        <td>
+            The crawler will load all web pages using the <a href="./proxy">Apify Proxy</a>
+            with specific groups of target proxy servers.
+            Please refer to the <a href="#proxyGroups">{{ crawlerSchema.proxyGroups.caption }}</a> section for more details.
+        </td>
+    </tr>
+    <tr>
+        <th><b>Custom proxies</b><br><span class="api-field-name">='CUSTOM'</span></td>
+        <td>
+            Enables the crawler to use a custom list of proxy servers.
+            Please refer to the <a href="#customProxies">{{ crawlerSchema.customProxies.caption }}</a>
+            section for more details.
+        </td>
+    </tr>
+    </tbody>
+</table>
 
+Note that the custom proxy used to fetch a specific page
+is stored to the <code>proxy</code> field of the <a href="#requestObject">Request object</a>.
+Note that for security reasons, the usernames and passwords are redacted from the proxy URL.
 
+### Option `proxyGroups`
 
+<p>
+    <i>This field is only available for the <b>Selected proxy groups</b> option of the <a href="#proxyType">{{ crawlerSchema.proxyType.caption }}</a> field.</i>
+</p>
+<p>
+    The crawler will use <a href="./proxy">Apify Proxy</a> with target proxies from the selected proxy groups.
+    Each new web page will be served by a target proxy server that hasn't been used in the longest time for the specific hostname,
+    in order to reduce the chance of detection by the website.
+    You can view the list of available groups
+    on the <a href="{{ appBaseUrl }}/proxy" target="_blank" rel="noopener">Proxy</a> page in the app.
+</p>
+<p>
+    If you prefer to use your own proxy servers, select the <b>Custom proxies</b> option in the <a href="#proxyType">{{crawlerSchema.proxyType.caption}}</a> field
+    and then enter the proxy servers into the
+    <a href="#customProxies">{{ crawlerSchema.customProxies.caption }}</a> field.
+</p>
 
-        <h3><a href="#customProxies"><i class="fa fa-link" aria-hidden="true"></i></a>{{{ crawlerFieldCaption "customProxies" }}}</h3>
-        <p>
-            <i>This field is only available for the <b>Custom proxies</b> option of the <a href="#proxyType">{{ crawlerSchema.proxyType.caption }}</a> field.</i>
-        </p>
-        <p>
-            A list of custom proxy servers to be used by the crawler.
-            Each proxy should be specified in the <code>scheme://user:password@host:port</code> format, multiple proxies should be separated by a space or new line.
-            The URL scheme defines the proxy type, possible values are <code>http</code> and <code>socks5</code>.
-            User and password might be omitted, but the port must always be present.
-            Separate proxies are separated by spaces or new lines.
-        </p>
-        <p>
-            Example:
-        </p>
-        <pre><code class="language-none">http://bob:password@proxy1.example.com:8000
+### Option `customProxies`
+
+<p>
+    <i>This field is only available for the <b>Custom proxies</b> option of the <a href="#proxyType">{{ crawlerSchema.proxyType.caption }}</a> field.</i>
+</p>
+<p>
+    A list of custom proxy servers to be used by the crawler.
+    Each proxy should be specified in the <code>scheme://user:password@host:port</code> format, multiple proxies should be separated by a space or new line.
+    The URL scheme defines the proxy type, possible values are <code>http</code> and <code>socks5</code>.
+    User and password might be omitted, but the port must always be present.
+    Separate proxies are separated by spaces or new lines.
+</p>
+<p>
+    Example:
+</p>
+<pre><code class="language-none">http://bob:password@proxy1.example.com:8000
 http://bob:password@proxy2.example.com:8000</code></pre>
-        <p>
-            If you want to combine your custom proxies with <a href="./proxy">Apify Proxy</a> groups, or if you wish to use the Apify Proxy
-            rotation and proxy selection system for your custom proxies, please let us know at <a href="mailto:support@apify.com">support@apify.com</a>.
-        </p>
-
+<p>
+    If you want to combine your custom proxies with <a href="./proxy">Apify Proxy</a> groups, or if you wish to use the Apify Proxy
+    rotation and proxy selection system for your custom proxies, please let us know at <a href="mailto:support@apify.com">support@apify.com</a>.
+</p>
 
 ## Cookies
 
+### Option `cookies`
 
-        <h3><a href="#cookies"><i class="fa fa-link" aria-hidden="true"></i></a>{{{ crawlerFieldCaption "cookies" }}}</h3>
-        <p>
-            An array of cookies used to initialize the crawler.
-            You can export the cookies from your own web browser,
-            for example using the <a href="http://www.editthiscookie.com/" target="_blank" rel="noopener">EditThisCookie</a> plugin.
-            This setting is typically used to start crawling when logged in to certain websites.
-            The array might be null or empty, in which case the crawler will start with no cookies.
-        </p>
-        <p>
-            Note that if the <a href="#cookiesPersistence">{{ crawlerSchema.cookiesPersistence.caption }}</a>
-            setting is <b>Over all crawler runs</b>, the cookies array will be overwritten
-            with fresh cookies from the crawler whenever it successfully finishes.
-        </p>
-        <p>
-            <b>WARNING:</b> You should never share cookies or an exported crawler configuration containing cookies
-            with untrusted parties, because they might use it to authenticate themselves to various websites with your credentials.
-        </p>
-        <p>
-            Example:
-        </p>
-        <pre id="cookiesExample"><code class="language-js">[
+<p>
+    An array of cookies used to initialize the crawler.
+    You can export the cookies from your own web browser,
+    for example using the <a href="http://www.editthiscookie.com/" target="_blank" rel="noopener">EditThisCookie</a> plugin.
+    This setting is typically used to start crawling when logged in to certain websites.
+    The array might be null or empty, in which case the crawler will start with no cookies.
+</p>
+<p>
+    Note that if the <a href="#cookiesPersistence">{{ crawlerSchema.cookiesPersistence.caption }}</a>
+    setting is <b>Over all crawler runs</b>, the cookies array will be overwritten
+    with fresh cookies from the crawler whenever it successfully finishes.
+</p>
+<p>
+    <b>WARNING:</b> You should never share cookies or an exported crawler configuration containing cookies
+    with untrusted parties, because they might use it to authenticate themselves to various websites with your credentials.
+</p>
+<p>
+    Example:
+</p>
+```json
+[
   {
     "domain": ".example.com",
     "expires": "Thu, 01 Jun 2017 16:14:38 GMT",
@@ -634,73 +625,55 @@ http://bob:password@proxy2.example.com:8000</code></pre>
     "secure": false,
     "value": "Some other value"
   }
-]</code></pre>
-    </section>
+]
+```
 
-    <section id="cookiesPersistence">
-        <h3><a href="#cookiesPersistence"><i class="fa fa-link" aria-hidden="true"></i></a>{{{ crawlerFieldCaption "cookiesPersistence" }}}</h3>
-        <p>
-            Indicates how the crawler saves and reuses cookies.
-            When you start the crawler, the first PhantomJS process will
-            use the cookies defined by the <a href="#cookies">{{ crawlerSchema.cookies.caption }}</a> setting.
-            Subsequent PhantomJS processes will use cookies as follows:
-        </p>
-        <table class="table table-bordered">
-            <tbody>
-                <tr>
-                    <td style="width: 30%"><b>Per single crawling process only</b><br><span class="api-field-name">='PER_PROCESS'</span></td>
-                    <td style="width: 70%">
-                        Cookies are only maintained separately by each PhantomJS crawling process
-                        for the lifetime of that process. The cookies are not shared between crawling processes.
-                        This means that whenever the crawler rotates its IP address, it will start
-                        again with cookies defined by the <a href="#cookies">{{ crawlerSchema.cookies.caption }}</a> setting.
-                        Use this setting for maximum privacy and to avoid detection of the crawler.
-                        This is the <b>default</b> option.
-                    </td>
-                </tr>
-                <tr>
-                    <td><b>Per full crawler run</b><br><span class="api-field-name">='PER_CRAWLER_RUN'</span></td>
-                    <td>
-                        Indicates that cookies collected at the start of the crawl by the first PhantomJS process
-                        are reused by other PhantomJS processes, even when switching to a new IP address.
-                        This might be necessary to maintain a login performed at the beginning of your crawl,
-                        but it might help the server to detect the crawler.
-                        Note that cookies are only collected at the beginning of the crawl by the initial
-                        PhantomJS process. Cookies set by subsequent PhantomJS processes are only valid for the duration of that
-                        process and are not reused by other processes. This is necessary to enable crawl parallelization.
-                    </td>
-                </tr>
-                <tr>
-                    <td><b>Over all crawler runs<br><span class="api-field-name">='OVER_CRAWLER_RUNS'</span></b></td>
-                    <td>
-                        This setting is similar to <b>Per full crawler run</b>,
-                        the only difference is that if the crawler finishes with <code>SUCCEEDED</code> status,
-                        its current cookies are automatically saved
-                        to the <a href="#cookies">{{ crawlerSchema.cookies.caption }}</a> setting
-                        so that new crawler run start where the previous run left off.
-                        This is useful to keep login cookies fresh and avoid their expiration.
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </section>
+### Option `cookiesPersistence`
 
-
-
-    <section id="customData">
-        <h3><a href="#customData"><i class="fa fa-link" aria-hidden="true"></i></a>{{{ crawlerFieldCaption "customData" }}}</h3>
-        <p>
-            Custom user data passed to the page function and intercept request function
-            as <code>context.customData</code>.
-            This setting is mainly useful if you're invoking the crawler using an API,
-            so that you can pass some arbitrary parameters to your code.
-            In the crawler settings editor the value can only be a string,
-            but when passing it through the API it can be an arbitrary JSON-stringifyable object.
-        </p>
-    </section>
-
-
-
+<p>
+    Indicates how the crawler saves and reuses cookies.
+    When you start the crawler, the first PhantomJS process will
+    use the cookies defined by the <a href="#cookies">{{ crawlerSchema.cookies.caption }}</a> setting.
+    Subsequent PhantomJS processes will use cookies as follows:
+</p>
+<table class="table table-bordered">
+    <tbody>
+        <tr>
+            <td style="width: 30%"><b>Per single crawling process only</b><br><span class="api-field-name">='PER_PROCESS'</span></td>
+            <td style="width: 70%">
+                Cookies are only maintained separately by each PhantomJS crawling process
+                for the lifetime of that process. The cookies are not shared between crawling processes.
+                This means that whenever the crawler rotates its IP address, it will start
+                again with cookies defined by the <a href="#cookies">{{ crawlerSchema.cookies.caption }}</a> setting.
+                Use this setting for maximum privacy and to avoid detection of the crawler.
+                This is the <b>default</b> option.
+            </td>
+        </tr>
+        <tr>
+            <td><b>Per full crawler run</b><br><span class="api-field-name">='PER_CRAWLER_RUN'</span></td>
+            <td>
+                Indicates that cookies collected at the start of the crawl by the first PhantomJS process
+                are reused by other PhantomJS processes, even when switching to a new IP address.
+                This might be necessary to maintain a login performed at the beginning of your crawl,
+                but it might help the server to detect the crawler.
+                Note that cookies are only collected at the beginning of the crawl by the initial
+                PhantomJS process. Cookies set by subsequent PhantomJS processes are only valid for the duration of that
+                process and are not reused by other processes. This is necessary to enable crawl parallelization.
+            </td>
+        </tr>
+        <tr>
+            <td><b>Over all crawler runs<br><span class="api-field-name">='OVER_CRAWLER_RUNS'</span></b></td>
+            <td>
+                This setting is similar to <b>Per full crawler run</b>,
+                the only difference is that if the crawler finishes with <code>SUCCEEDED</code> status,
+                its current cookies are automatically saved
+                to the <a href="#cookies">{{ crawlerSchema.cookies.caption }}</a> setting
+                so that new crawler run start where the previous run left off.
+                This is useful to keep login cookies fresh and avoid their expiration.
+            </td>
+        </tr>
+    </tbody>
+</table>
 
 ## Request object
 

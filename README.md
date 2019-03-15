@@ -364,25 +364,25 @@ A user-provided JavaScript function that is called whenever
 a new URL is about to be added to the crawling queue,
 which happens at the following times:
 
-- At the start of crawling for all <a href="#startUrls">Start URLs.</a>
+- At the start of crawling for all <a href="#start-urls">Start URLs.</a>
 - When the crawler looks for links to new pages by clicking elements
-  matching the <a href="#clickableElementsSelector">Clickable elements</a>
+  matching the <a href="#clickable-elements-selector">Clickable elements</a>
   CSS selector and detects a page navigation request, i.e. a link (GET)
   or a form submission (POST) that would normally cause the browser to navigate to a new web page.
 - Whenever a loaded page tries to navigate to another page, e.g. by setting <code>window.location</code> in JavaScript.
-- When user code invokes <code>enqueuePage()</code> inside of <a href="#pageFunction">Page function</a>.
+- When user code invokes <code>enqueuePage()</code> inside of <a href="#page-function">Page function</a>.
 
 The intercept request function allows you to affect on a low level
 how new pages are enqueued by the crawler.
 For example, it can be used to ensure that the request is added to the crawling queue even
 if it doesn't match
-any of the <a href="#crawlPurls">Pseudo-URLs</a>,
+any of the <a href="#crawl-purls">Pseudo-URLs</a>,
 or to change the way the crawler determines whether the page has already been visited or not.
-Similarly to the <a href="#pageFunction">Page function</a>,
+Similarly to the <a href="#page-function">Page function</a>,
 this function is executed in the context of the originating web page (or in the context
-of <code>about:blank</code> page for <a href="#startUrls">Start URLs</a>).
+of <code>about:blank</code> page for <a href="#start-urls">Start URLs</a>).
 
-<b>IMPORTANT:</b> Apify is currently using <a href="http://phantomjs.org/" target="_blank" rel="noopener">PhantomJS</a>
+<b>IMPORTANT:</b> This actor is using <a href="http://phantomjs.org/" target="_blank" rel="noopener">PhantomJS</a>
 headless web browser, which only supports the JavaScript ES5.1 standard
 (read more in <a href="https://ariya.io/2014/08/phantomjs-2-and-javascript-goodies" target="_blank" rel="noopener">blog post about PhantomJS 2.0</a>).
 
@@ -401,14 +401,14 @@ The <code>context</code> is an object with the following properties:
     <tr>
         <td><code>request</code></td>
         <td>An object holding all the available information about the currently loaded web page.
-            See <a href="#requestObject">Request object</a> for details.
+            See <a href="#request-object">Request object</a> for details.
         </td>
     </tr>
     <tr>
         <td><code>jQuery</code></td>
         <td>A <a href="http://api.jquery.com/jQuery/" target="_blank" rel="noopener">jQuery</a> object, only
             available if the
-            <a href="#injectJQuery">Inject jQuery</a>
+            <a href="#inject-jquery">Inject jQuery</a>
             setting is
             enabled. <!--<?php/* TODO: Although the web page can include jQuery, you shouldnt.. */?>-->
         </td>
@@ -417,7 +417,7 @@ The <code>context</code> is an object with the following properties:
         <td><code>underscoreJs</code></td>
         <td>An <a href="http://underscorejs.org/" target="_blank" rel="noopener">Underscore.js</a> object, only
             available if the
-            <a href="#injectUnderscoreJs">Inject Underscore.js</a>
+            <a href="#inject-underscore-js">Inject Underscore.js</a>
             setting is enabled.
         </td>
     </tr>
@@ -436,7 +436,7 @@ The <code>context</code> is an object with the following properties:
 Beware that in rare situations when the page redirects in its JavaScript before it was
 completely loaded
 by the crawler, the <code>jQuery</code> and <code>underscoreJs</code> objects will be undefined.
-The <code>newRequest</code> parameter contains a <a href="#requestObject">Request object</a>
+The <code>newRequest</code> parameter contains a <a href="#request-object">Request object</a>
 corresponding to the new page.
 
 The way the crawler handles the new page navigation request depends
@@ -474,32 +474,22 @@ on the return value of the <code>interceptRequest</code> function in the followi
 </p>
 
 
-## Infinite scroll
+## Infinite scroll `maxInfiniteScrollHeight`
 
-TODO:
-    <section id="maxInfiniteScrollHeight">
-        <h3><a href="#maxInfiniteScrollHeight"><i class="fa fa-link" aria-hidden="true"></i></a>{{{ crawlerFieldCaption "maxInfiniteScrollHeight" }}}</h3>
-        <p>
-            Defines the maximum client height in pixels to which the browser window is scrolled in order to fetch dynamic AJAX-based content from the web server. By default, the crawler doesn't scroll and uses a fixed browser window size. Note that you might need to enable <b>Download HTML images</b> to make infinite scroll work, because otherwise the crawler wouldn't know that
-            some resources are still being loaded and will stop infinite scrolling prematurely.
-        </p>
-    </section>
+Defines the maximum client height in pixels to which the browser window is scrolled in order to fetch dynamic AJAX-based content from the web server. By default, the crawler doesn't scroll and uses a fixed browser window size. Note that you might need to enable <b>Download HTML images</b> to make infinite scroll work, because otherwise the crawler wouldn't know that
+some resources are still being loaded and will stop infinite scrolling prematurely.
 
-    <section id="randomWaitBetweenRequests">
-        <h3><a href="#randomWaitBetweenRequests"><i class="fa fa-link" aria-hidden="true"></i></a>{{{ crawlerFieldCaption "randomWaitBetweenRequests" }}}</h3>
-        <p>
-            This option forces the crawler to ensure a minimum time interval between opening two web
-            pages, in order to prevent it from
-            overloading the target server.
-            The actual minimum time is a random value drawn from a Gaussian distribution with a mean
-            specified
-            by your setting (in milliseconds) and a standard deviation corresponding to 25% of the
-            mean.
-            The minimum value is 1000 milliseconds, the crawler never issues requests in shorter
-            intervals than 1000 milliseconds.
-        </p>
-    </section>
+## Random wait between requests `randomWaitBetweenRequests`
 
+This option forces the crawler to ensure a minimum time interval between opening two web
+pages, in order to prevent it from
+overloading the target server.
+The actual minimum time is a random value drawn from a Gaussian distribution with a mean
+specified
+by your setting (in milliseconds) and a standard deviation corresponding to 25% of the
+mean.
+The minimum value is 1000 milliseconds, the crawler never issues requests in shorter
+intervals than 1000 milliseconds.
 
 ## Proxies
 
@@ -717,8 +707,8 @@ http://bob:password@proxy2.example.com:8000</code></pre>
 This object contains all the available information about every single web page the crawler
 encounters
 (both visited and not visited). This object comes into play
-in both <a href="#pageFunction">Page function</a>
-and <a href="#interceptRequest">Intercept request function</a>
+in both <a href="#page-function">Page function</a>
+and <a href="#intercept-request">Intercept request function</a>
 and crawling results are actually just an array of these objects.
 
 The Request object has the following schema:

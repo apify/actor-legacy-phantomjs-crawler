@@ -7,7 +7,7 @@ Apify provides a hosted web crawler for developers. Technically speaking, it is 
 servers that enable you to scrape data from any website using the primary programming language of the web: JavaScript.
 
 In order to extract structured data from a website, you only need two things. First, tell the crawler which pages it
-should visit (see <a href="#start-urls">Start URLs</a> and <a href="#crawl-purls">Pseudo-URLs</a>) and second, define
+should visit (see <a href="#start-urls">Start URLs</a> and <a href="#pseudo-urls">Pseudo-URLs</a>) and second, define
 a JavaScript code that will be executed on every web page visited in order to extract the data from it
 (see <a href="#page-function">Page function</a>).
 The crawler is a full-featured web browser which loads and interprets JavaScript and the code you provide is simply
@@ -31,8 +31,8 @@ More formally, the crawler repeats the following steps:
     <li>Add each of the <a href="#start-urls">Start URLs</a> into the crawling queue.</li>
     <li>Fetch the first URL from the queue and load it in the virtual browser.</li>
     <li>Execute <a href="#page-function">Page function</a> on the loaded page and save its results.</li>
-    <li>Find all links from the page using <a href="#clickable-elementsSelector">Clickable elements</a> CSS selector.
-        If a link matches any of the <a href="#crawl-purls">Pseudo-URLs</a> and has not yet been enqueued, add it to the queue.</li>
+    <li>Find all links from the page using <a href="#clickable-elements">Clickable elements</a> CSS selector.
+        If a link matches any of the <a href="#pseudo-urls">Pseudo-URLs</a> and has not yet been enqueued, add it to the queue.</li>
     <li>If there are more items in the queue, go to step 2, otherwise finish.</li>
 </ol>
 
@@ -100,7 +100,7 @@ your JavaScript code to determine which page is currently open
 
 Note that you don't need to use this setting at all,
 because you can completely control which pages the crawler will access using the
-<a href="#intercept-request">Intercept request function</a>.
+<a href="#intercept-request-function">Intercept request function</a>.
 
 Maximum label length is 100 characters
 and maximum PURL length is 1000 characters.
@@ -111,8 +111,8 @@ Contains a CSS selector used to find links to other web pages.
 The crawler clicks all DOM elements matching this selector
 and then monitors whether the page generates a navigation request.
 If a navigation request is detected, the crawler checks whether it matches
-<a href="#crawl-purls">Pseudo-URLs</a>,
-invokes <a href="#intercept-request">Intercept request function</a>,
+<a href="#pseudo-urls">Pseudo-URLs</a>,
+invokes <a href="#intercept-request-function">Intercept request function</a>,
 cancels the request and then continues clicking the next matching elements.
 By default, new crawlers are created with a safe CSS selector:
 
@@ -376,7 +376,7 @@ The intercept request function allows you to affect on a low level
 how new pages are enqueued by the crawler.
 For example, it can be used to ensure that the request is added to the crawling queue even
 if it doesn't match
-any of the <a href="#crawl-purls">Pseudo-URLs</a>,
+any of the <a href="#pseudo-urls">Pseudo-URLs</a>,
 or to change the way the crawler determines whether the page has already been visited or not.
 Similarly to the <a href="#page-function">Page function</a>,
 this function is executed in the context of the originating web page (or in the context
@@ -681,7 +681,7 @@ This object contains all the available information about every single web page t
 encounters
 (both visited and not visited). This object comes into play
 in both <a href="#page-function">Page function</a>
-and <a href="#intercept-request">Intercept request function</a>
+and <a href="#intercept-request-function">Intercept request function</a>
 and crawling results are actually just an array of these objects.
 
 The Request object has the following schema:

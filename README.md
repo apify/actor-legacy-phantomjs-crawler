@@ -508,7 +508,7 @@ The following table lists all available options:
         </td>
     </tr>
     <tr>
-        <th><b>Custom proxies</b><br><span class="api-field-name">='CUSTOM'</span></td>
+        <th><b>Custom proxies</b><br><code>CUSTOM</code></td>
         <td>
             Enables the crawler to use a custom list of proxy servers.
             Please refer to the <a href="#option-customProxies">custom proxies</a>
@@ -616,24 +616,24 @@ http://bob:password@proxy2.example.com:8000</code></pre>
 <p>
     Indicates how the crawler saves and reuses cookies.
     When you start the crawler, the first PhantomJS process will
-    use the cookies defined by the <a href="#cookies">{{ crawlerSchema.cookies.caption }}</a> setting.
+    use the cookies defined by the <a href="#option-cookies">cookies</a> setting.
     Subsequent PhantomJS processes will use cookies as follows:
 </p>
 <table class="table table-bordered">
     <tbody>
         <tr>
-            <td style="width: 30%"><b>Per single crawling process only</b><br><span class="api-field-name">='PER_PROCESS'</span></td>
+            <td style="width: 30%"><b>Per single crawling process only</b><br><code>PER_PROCESS</code></td>
             <td style="width: 70%">
                 Cookies are only maintained separately by each PhantomJS crawling process
                 for the lifetime of that process. The cookies are not shared between crawling processes.
                 This means that whenever the crawler rotates its IP address, it will start
-                again with cookies defined by the <a href="#cookies">{{ crawlerSchema.cookies.caption }}</a> setting.
+                again with cookies defined by the <a href="#option-cookies">cookies</a> setting.
                 Use this setting for maximum privacy and to avoid detection of the crawler.
                 This is the <b>default</b> option.
             </td>
         </tr>
         <tr>
-            <td><b>Per full crawler run</b><br><span class="api-field-name">='PER_CRAWLER_RUN'</span></td>
+            <td><b>Per full crawler run</b><br><code>PER_CRAWLER_RUN</code></td>
             <td>
                 Indicates that cookies collected at the start of the crawl by the first PhantomJS process
                 are reused by other PhantomJS processes, even when switching to a new IP address.
@@ -645,12 +645,12 @@ http://bob:password@proxy2.example.com:8000</code></pre>
             </td>
         </tr>
         <tr>
-            <td><b>Over all crawler runs<br><span class="api-field-name">='OVER_CRAWLER_RUNS'</span></b></td>
+            <td><b>Over all crawler runs<br><code>OVER_CRAWLER_RUNS</code></b></td>
             <td>
                 This setting is similar to <b>Per full crawler run</b>,
                 the only difference is that if the crawler finishes with <code>SUCCEEDED</code> status,
                 its current cookies are automatically saved
-                to the <a href="#cookies">{{ crawlerSchema.cookies.caption }}</a> setting
+                to the <a href="#option-cookies">cookies</a> setting
                 so that new crawler run start where the previous run left off.
                 This is useful to keep login cookies fresh and avoid their expiration.
             </td>

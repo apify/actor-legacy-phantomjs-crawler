@@ -479,37 +479,37 @@ The following table lists all available options:
 <table class="table table-bordered table-condensed">
     <tbody>
     <tr>
-        <th><b>None</b><br><span class="api-field-name">='NONE'</span></td>
+        <th><b>None</b><br><code>NONE</code></td>
         <td>
             Crawler will not use any proxies.
             All web pages will be loaded directly from IP addresses of Apify servers running on Amazon Web Services.
         </td>
     </tr>
     <tr>
-        <th><b>Apify Proxy (automatic)</b><br><span class="api-field-name">='AUTO'</span></td>
+        <th><b>Apify Proxy (automatic)</b><br><code>AUTO</code></td>
         <td>
-            The crawler will load all web pages using the <a href="./proxy">Apify Proxy</a>
+            The crawler will load all web pages using the <a href="https://apify.com/proxy">Apify Proxy</a>
             in the automatic mode. In this mode, the proxy uses all proxy groups
             that are available to the user, and for each new web page it automatically selects the proxy
             that hasn't been used in the longest time for the specific hostname,
             in order to reduce the chance of detection by the website.
             You can view the list of available proxy groups
-            on the <a href="{{ appBaseUrl }}/proxy" target="_blank" rel="noopener">Proxy</a> page in the app.
+            on the <a href="https://my.apify.com/proxy" target="_blank" rel="noopener">Proxy</a> page in the app.
         </td>
     </tr>
     <tr>
-        <th><b>Apify Proxy (selected groups)</b><br><span class="api-field-name">='SELECTED_PROXY_GROUPS'</span></td>
+        <th><b>Apify Proxy (selected groups)</b><br><code>SELECTED_PROXY_GROUPS</code></td>
         <td>
-            The crawler will load all web pages using the <a href="./proxy">Apify Proxy</a>
+            The crawler will load all web pages using the <a href="https://apify.com/proxy">Apify Proxy</a>
             with specific groups of target proxy servers.
-            Please refer to the <a href="#proxyGroups">{{ crawlerSchema.proxyGroups.caption }}</a> section for more details.
+            Please refer to the <a href="#option-proxygroups">proxy groups</a> section for more details.
         </td>
     </tr>
     <tr>
         <th><b>Custom proxies</b><br><span class="api-field-name">='CUSTOM'</span></td>
         <td>
             Enables the crawler to use a custom list of proxy servers.
-            Please refer to the <a href="#customProxies">{{ crawlerSchema.customProxies.caption }}</a>
+            Please refer to the <a href="#option-customProxies">custom proxies</a>
             section for more details.
         </td>
     </tr>

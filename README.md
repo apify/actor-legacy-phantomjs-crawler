@@ -252,7 +252,7 @@ which is an object with the following properties and functions:
         <td>
             <p>
             Adds a new page request to the crawling queue, regardless of whether it matches
-            any of the <a href="#crawlPurls">Pseudo-URLs</a>.
+            any of the <a href="#pseudo-urls">Pseudo-URLs</a>.
             The <code>request</code> argument is an instance of the <a href="#request-object">Request object</a>,
             but only the following properties are taken into account:
             <code>url</code>, <code>uniqueKey</code>, <code>label</code>,
@@ -364,7 +364,7 @@ which happens at the following times:
 
 - At the start of crawling for all <a href="#start-urls">Start URLs.</a>
 - When the crawler looks for links to new pages by clicking elements
-  matching the <a href="#clickable-elements-selector">Clickable elements</a>
+  matching the <a href="#clickable-elements">Clickable elements</a>
   CSS selector and detects a page navigation request, i.e. a link (GET)
   or a form submission (POST) that would normally cause the browser to navigate to a new web page.
 - Whenever a loaded page tries to navigate to another page, e.g. by setting <code>window.location</code> in JavaScript.
@@ -406,7 +406,7 @@ The <code>context</code> is an object with the following properties:
         <td><code>jQuery</code></td>
         <td>A <a href="http://api.jquery.com/jQuery/" target="_blank" rel="noopener">jQuery</a> object, only
             available if the
-            <a href="#inject-jquery">Inject jQuery</a>
+            <strong>Inject jQuery</strong>
             setting is
             enabled. <!--<?php/* TODO: Although the web page can include jQuery, you shouldnt.. */?>-->
         </td>
@@ -415,7 +415,7 @@ The <code>context</code> is an object with the following properties:
         <td><code>underscoreJs</code></td>
         <td>An <a href="http://underscorejs.org/" target="_blank" rel="noopener">Underscore.js</a> object, only
             available if the
-            <a href="#inject-underscore-js">Inject Underscore.js</a>
+            <strong>Inject Underscore.js</strong>
             setting is enabled.
         </td>
     </tr>
@@ -451,7 +451,7 @@ on the return value of the <code>interceptRequest</code> function in the followi
         <code>contentType</code>,
         <code>uniqueKey</code>, <code>label</code>, <code>interceptRequestData</code>
         and <code>queuePosition</code>
-        (see <a href="#requestObject">Request object</a> for details).
+        (see <a href="#request-object">Request object</a> for details).
     </li>
     <li>If function returns <code>null</code>, the request will be dropped and a new page will not
         be enqueued.
@@ -470,24 +470,6 @@ on the return value of the <code>interceptRequest</code> function in the followi
     Also note that the function does not resolve HTTP redirects: it only reports the originally
     requested URL, but does not open it to find out which URL it eventually redirects to.
 </p>
-
-
-## Infinite scroll `maxInfiniteScrollHeight`
-
-Defines the maximum client height in pixels to which the browser window is scrolled in order to fetch dynamic AJAX-based content from the web server. By default, the crawler doesn't scroll and uses a fixed browser window size. Note that you might need to enable <b>Download HTML images</b> to make infinite scroll work, because otherwise the crawler wouldn't know that
-some resources are still being loaded and will stop infinite scrolling prematurely.
-
-## Random wait between requests `randomWaitBetweenRequests`
-
-This option forces the crawler to ensure a minimum time interval between opening two web
-pages, in order to prevent it from
-overloading the target server.
-The actual minimum time is a random value drawn from a Gaussian distribution with a mean
-specified
-by your setting (in milliseconds) and a standard deviation corresponding to 25% of the
-mean.
-The minimum value is 1000 milliseconds, the crawler never issues requests in shorter
-intervals than 1000 milliseconds.
 
 ## Proxies
 

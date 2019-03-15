@@ -223,7 +223,7 @@
       "title": "Infinite scroll height",
       "type": "integer",
       "nullable": true,
-      "description": "The maximum client height in pixels to which the browser window is scrolled to fetch a dynamic content. You might need to enable HTML images to make this work. If not set, no scrolling is performed.",
+      "description": "Defines the maximum client height in pixels to which the browser window is scrolled in order to fetch dynamic AJAX-based content from the web server. By default, the crawler doesn't scroll and uses a fixed browser window size. Note that you might need to enable <b>Download HTML images</b> to make infinite scroll work, because otherwise the crawler wouldn't know that some resources are still being loaded and will stop infinite scrolling prematurely.",
       "minimum": 0,
       "maximum": 1000000,
       "unit": "pixels"
@@ -233,7 +233,7 @@
       "title": "Delay between requests",
       "type": "integer",
       "nullable": true,
-      "description": "This option forces the crawler to wait before opening every page.",
+      "description": "This option forces the crawler to ensure a minimum time interval between opening two web pages, in order to prevent it from overloading the target server. The actual minimum time is a random value drawn from a Gaussian distribution with a mean specified by your setting (in milliseconds) and a standard deviation corresponding to 25% of the mean. The minimum value is 1000 milliseconds, the crawler never issues requests in shorter intervals than 1000 milliseconds.",
       "minimum": 1000,
       "maximum": 1000000,
       "default": 1000,

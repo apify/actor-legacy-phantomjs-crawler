@@ -511,7 +511,7 @@ The following table lists all available options:
         <th><b>Custom proxies</b><br><code>CUSTOM</code></td>
         <td>
             Enables the crawler to use a custom list of proxy servers.
-            Please refer to the <a href="#option-customProxies">custom proxies</a>
+            Please refer to the <a href="#option-customproxies">custom proxies</a>
             section for more details.
         </td>
     </tr>
@@ -525,7 +525,7 @@ Note that for security reasons, the usernames and passwords are redacted from th
 ### Option `proxyGroups`
 
 <p>
-    <i>This field is only available for the <b>Selected proxy groups</b> option of the <a href="#option-proxyType">proxy type</a> field.</i>
+    <i>This field is only available for the <b>Selected proxy groups</b> option of the <a href="#option-proxytype">proxy type</a> field.</i>
 </p>
 <p>
     The crawler will use <a href="https://apify.com/proxy">Apify Proxy</a> with target proxies from the selected proxy groups.
@@ -535,15 +535,15 @@ Note that for security reasons, the usernames and passwords are redacted from th
     on the <a href="https://my.apify.com/proxy" target="_blank" rel="noopener">Proxy</a> page in the app.
 </p>
 <p>
-    If you prefer to use your own proxy servers, select the <b>Custom proxies</b> option in the <a href="#option-proxyType">proxy type</a> field
+    If you prefer to use your own proxy servers, select the <b>Custom proxies</b> option in the <a href="#option-proxytype">proxy type</a> field
     and then enter the proxy servers into the
-    <a href="#option-customProxies">custom proxies</a> field.
+    <a href="#option-customproxies">custom proxies</a> field.
 </p>
 
 ### Option `customProxies`
 
 <p>
-    <i>This field is only available for the <b>Custom proxies</b> option of the <a href="#option-proxyType">proxy type</a> field.</i>
+    <i>This field is only available for the <b>Custom proxies</b> option of the <a href="#option-proxytype">proxy type</a> field.</i>
 </p>
 <p>
     A list of custom proxy servers to be used by the crawler.
@@ -574,7 +574,7 @@ http://bob:password@proxy2.example.com:8000</code></pre>
     The array might be null or empty, in which case the crawler will start with no cookies.
 </p>
 <p>
-    Note that if the <a href="#option-cookiesPersistence">cookie persistence</a>
+    Note that if the <a href="#option-cookiespersistence">cookie persistence</a>
     setting is <b>Over all crawler runs</b>, the cookies array will be overwritten
     with fresh cookies from the crawler whenever it successfully finishes.
 </p>

@@ -4,11 +4,11 @@
 	"description": "Apify actor implementing the legacy PhantomJS crawler.",
 	"main": "main.js",
 	"dependencies": {
-		"apify": "^0.12.4",
-		"apify-shared": "^0.1.21",
+		"apify": "^0.13",
+		"apify-shared": "^0.1.22",
 		"express": "^4.16.4",
 		"socket.io": "^2.2.0",
-		"tmp": "^0.0.33"
+		"tmp": "^0.1.0"
 	},
 	"devDependencies": {
 		"chai": "^4.2.0",

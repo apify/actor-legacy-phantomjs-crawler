@@ -11,6 +11,9 @@
       "editor": "keyValue",
       "placeholderKey": "Optional label",
       "placeholderValue": "URL",
+      "minItems": 1,
+      "patternKey": "^.{0,100}$",
+      "patternValue": "^([hH][tT][tT][pP]:\\/\\/|[hH][tT][tT][pP][sS]:\\/\\/)",
       "prefill": [
         {
           "key": "START",
@@ -27,6 +30,8 @@
       "editor": "keyValue",
       "placeholderKey": "Optional label",
       "placeholderValue": "Pseudo-URL",
+      "patternKey": "^.{0,100}$",
+      "patternValue": "^([hH][tT][tT][pP]:\\/\\/|[hH][tT][tT][pP][sS]:\\/\\/)",
       "prefill": [
         {
           "key": "MY_LABEL",
@@ -316,10 +321,10 @@
 
     "customData": {
       "title": "Custom data",
-      "type": "string",
+      "type": "object",
       "nullable": true,
-      "description": "A custom string that is passed to <b>Page function</b> and intercept request function as <code>context.customData</code>.",
-      "editor": "textfield"
+      "description": "A custom JSON object that is passed to <b>Page function</b> and intercept request function as <code>context.customData</code>. This setting is mainly useful if you're invoking the crawler using the API, so that you can pass some arbitrary parameters to your code.",
+      "editor": "json"
     },
 
     "cookies": {

@@ -344,22 +344,6 @@
       "default": "PER_PROCESS",
       "enum": ["PER_PROCESS", "PER_CRAWLER_RUN", "OVER_CRAWLER_RUNS"],
       "enumTitles": ["Per single crawling process only", "Per full crawler run", "Over all crawler runs"]
-    },
-
-    "finishWebhookUrl": {
-      "title": "Finish webhook URL",
-      "type": "string",
-      "nullable": true,
-      "editor": "hidden",
-      "description": "A HTTP endpoint that receives a POST request right after every run of this crawler finishes.<br><br>This field is kept just for backwards compatibility with legacy Crawler API. Please use standard actor webhooks instead."
-    },
-
-    "finishWebhookData": {
-      "title": "Finish webhook data",
-      "type": "string",
-      "nullable": true,
-      "editor": "hidden",
-      "description": "Custom string that is sent in the payload of the finish webhook HTTP request.<br><br>This field is kept just for backwards compatibility with legacy Crawler API. Please use standard actor webhooks instead."
     }
   },
   "required": []

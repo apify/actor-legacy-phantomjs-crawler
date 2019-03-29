@@ -3,7 +3,7 @@ const log = require('apify-shared/log');
 const PhantomCrawler = require('./phantom_crawler');
 
 Apify.main(async () => {
-    const input = await Apify.getValue('INPUT');
+    const input = await Apify.getInput();
     if (!input) throw new Error('The input was not provided');
 
     if (input.verboseLog) {

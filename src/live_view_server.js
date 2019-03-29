@@ -80,7 +80,7 @@ class LiveViewServer {
      * Called by PhantomCrawler when the snapshot of screen and HTML content was saved.
      */
     async pushSnapshot(screenshotFilePath, htmlContent, pageUrl) {
-        log.info('LiveViewServer.pushSnapshot()', { pageUrl });
+        log.debug('Live view received new snapshot', { pageUrl });
 
         const prevScreenshotIndex = this.lastScreenshotIndex;
 
@@ -93,7 +93,7 @@ class LiveViewServer {
         this.screenshotIndexToFilePath[this.lastScreenshotIndex] = screenshotFilePath;
 
         // Send new snapshot to clients
-        log.info('Sending live view snapshot', { snapshot: this.lastSnapshot });
+        // log.debug('Sending live view snapshot', { snapshot: this.lastSnapshot });
         this.socketio.emit('snapshot', this.lastSnapshot);
 
         // Delete screenshot after a while, maybe some client still wants to download it

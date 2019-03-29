@@ -1,10 +1,39 @@
 # Legacy PhantomJS Crawler
 
-Apify actor implementation of the legacy Apify crawler. The actor supports the same input as the original crawler,
-so you can call it the same way as the old one.
+The actor implements the legacy Apify Crawler product.
+It uses [PhantomJS](http://phantomjs.org/) headless browser to recursively
+crawl websites and extract data from them using a piece of JavaScript code.
+Since PhantomJS is no longer developed and supported,
+for new projects, we recommend to use the [`apify/web-scraper`](https://apify.com/apify/web-scraper) actor,
+which provides similar functionality, but is based on the modern headless Chrome browser.
 
-Apify provides a hosted web crawler for developers. Technically speaking, it is a bunch of web browsers hosted on Apify
-servers that enable you to scrape data from any website using the primary programming language of the web: JavaScript.
+## Compatibility with legacy Apify Crawler
+
+Apify Crawler used to be a core product of Apify, but in April 2019 it has been deprecated in favor of the more general
+[Apify Actors](https://apify.com/actors) product.
+This actor serves as a replacement of the legacy product and provides an equivalent interface and functionality,
+in order to enable users to seamlessly migrate their crawlers.
+Note that there are several differences between this actor and legacy Apify Crawler:
+
+- The **Cookies persistence** setting of **Over all crawler runs**
+  is only supported when running the actor as a task. When you run the actor directly and use the setting,
+  the actor will fail and print an error to log.
+- In **Page function**, the `context` object passed to the function has a slightly different properties:
+  - `stats` object contains only a subset of the original statistics
+  - `actExecutionId` and `actId` properties are not defined
+- The **Finish webhook URL** and **Finish webhook data** settings
+  are no longer supported, please use the [webhooks](https://apify.com/docs/webhooks) for actors instead.
+  If you pass these fields when calling the actor, you will receive an error, to fail fast rather than silently later.
+- The **Test URL** setting is not supported.
+  
+<!-- TODO:
+For more details how to migrate your crawlers to this actor, please see our blog post.
+-->
+
+## Overview
+
+This actor provides a web crawler for developers that enables you to scrape data from
+any website using the primary programming language of the web: JavaScript.
 
 In order to extract structured data from a website, you only need two things. First, tell the crawler which pages it
 should visit (see <a href="#start-urls">Start URLs</a> and <a href="#pseudo-urls">Pseudo-URLs</a>) and second, define
@@ -46,13 +75,12 @@ These settings are described in detail in the following sections.
         class="img-responsive"/></a>
 </center>
 
-Note that each crawler configuration setting can also be set using the API, the corresponding property name and type is
-`{described in this font}` right next to the property caption. When you export the crawler settings to JSON,
-the object will have these properties. For details, see the API section on the crawler details page.
+Note that each crawler configuration setting can also be set using the API, the corresponding property names and types are
+described in the [Input schema](https://apify.com/apify/web-scraper?section=input-schema) section.
 
 ## Start URLs
 
-Represents the list of URLs of the first pages that the crawler will open.
+The **Start URLs** (`startUrls`) field represent the list of URLs of the first pages that the crawler will open.
 Optionally, each URL can be associated with a custom label that can be referenced from
 your JavaScript code to determine which page is currently open
 (see <a href="#request-object">Request object</a> for details).
@@ -68,7 +96,7 @@ Maximum label length is 100 characters and maximum URL length is 2000 characters
 
 ## Pseudo-URLs
 
-Specifies which pages will be visited by the crawler using a <i>pseudo-URLs</i> (PURL)
+The **Pseudo-URLs** (`crawlPurls`) field specifies which pages will be visited by the crawler using a <i>pseudo-URLs</i> (PURL)
 format. PURL is simply a URL with special directives enclosed in `[]` brackets.
 Currently, the only supported directive is `[regexp]`, which defines
 a JavaScript-style regular expression to match against the URL.
@@ -99,8 +127,9 @@ your JavaScript code to determine which page is currently open
 (see <a href="#request-object">Request object</a> for details).
 
 Note that you don't need to use this setting at all,
-because you can completely control which pages the crawler will access using the
-<a href="#intercept-request-function">Intercept request function</a>.
+because you can completely control which pages the crawler will access, either using the
+<a href="#intercept-request-function">Intercept request function</a>
+or using `context.enqueuePage()` call inside the <a href="#page-function">Page function</a>.
 
 Maximum label length is 100 characters
 and maximum PURL length is 1000 characters.
@@ -473,6 +502,8 @@ on the return value of the <code>interceptRequest</code> function in the followi
 
 ## Proxies
 
+TODO: Describe new settings instead...
+
 ### Option `proxyType`
 
 Specifies the type of proxy servers that will be used by the crawler in order to hide its origin.
@@ -564,6 +595,8 @@ http://bob:password@proxy2.example.com:8000</code></pre>
 
 ## Cookies
 
+TODO
+
 ### Option `cookies`
 
 <p>
@@ -622,7 +655,7 @@ http://bob:password@proxy2.example.com:8000</code></pre>
 <table class="table table-bordered">
     <tbody>
         <tr>
-            <td style="width: 30%"><b>Per single crawling process only</b><br><code>PER_PROCESS</code></td>
+            <td style="width: 30%"><b>Per single crawling process only</b><br><code>"PER_PROCESS"</code></td>
             <td style="width: 70%">
                 Cookies are only maintained separately by each PhantomJS crawling process
                 for the lifetime of that process. The cookies are not shared between crawling processes.
@@ -633,7 +666,7 @@ http://bob:password@proxy2.example.com:8000</code></pre>
             </td>
         </tr>
         <tr>
-            <td><b>Per full crawler run</b><br><code>PER_CRAWLER_RUN</code></td>
+            <td><b>Per full crawler run</b><br><code>"PER_CRAWLER_RUN"</code></td>
             <td>
                 Indicates that cookies collected at the start of the crawl by the first PhantomJS process
                 are reused by other PhantomJS processes, even when switching to a new IP address.
@@ -645,7 +678,7 @@ http://bob:password@proxy2.example.com:8000</code></pre>
             </td>
         </tr>
         <tr>
-            <td><b>Over all crawler runs<br><code>OVER_CRAWLER_RUNS</code></b></td>
+            <td><b>Over all crawler runs<br><code>"OVER_CRAWLER_RUNS"</code></b></td>
             <td>
                 This setting is similar to <b>Per full crawler run</b>,
                 the only difference is that if the crawler finishes with <code>SUCCEEDED</code> status,

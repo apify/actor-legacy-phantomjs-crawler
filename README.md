@@ -3,8 +3,10 @@
 The actor implements the legacy Apify Crawler product.
 It uses [PhantomJS](http://phantomjs.org/) headless browser to recursively
 crawl websites and extract data from them using a front-end JavaScript code.
-Since PhantomJS is no longer developed and supported,
-for new projects, we recommend to use the [`apify/web-scraper`](https://apify.com/apify/web-scraper) actor,
+Note that PhantomJS is no longer developed by the community
+and it might be easily detected and blocked by target websites.
+Therefore, for new projects, we recommend to use the
+[`apify/web-scraper`](https://apify.com/apify/web-scraper) actor,
 which provides similar functionality, but is based on the modern headless Chrome browser.
 
 ## Compatibility with legacy Apify Crawler
@@ -576,8 +578,9 @@ Note that the proxy server used to fetch a specific page
 is stored to the <code>proxy</code> field of the <a href="#requestObject">Request object</a>.
 Note that for security reasons, the usernames and passwords are redacted from the proxy URL.
 
-The proxy configuration can be set programmaticaly when calling the actor using API
-using the `proxyConfiguration` field. It accepts a JSON object with the following structure:
+The proxy configuration can be set programmatically when calling the actor using the API
+by setting the `proxyConfiguration` field.
+It accepts a JSON object with the following structure:
 
 ```javascript
 {
@@ -596,29 +599,26 @@ using the `proxyConfiguration` field. It accepts a JSON object with the followin
 
 ## Cookies
 
+
+
 TODO
 
 ### Option `cookies`
 
-<p>
-    An array of cookies used to initialize the crawler.
-    You can export the cookies from your own web browser,
-    for example using the <a href="http://www.editthiscookie.com/" target="_blank" rel="noopener">EditThisCookie</a> plugin.
-    This setting is typically used to start crawling when logged in to certain websites.
-    The array might be null or empty, in which case the crawler will start with no cookies.
-</p>
-<p>
-    Note that if the <a href="#option-cookiespersistence">cookie persistence</a>
-    setting is <b>Over all crawler runs</b>, the cookies array will be overwritten
-    with fresh cookies from the crawler whenever it successfully finishes.
-</p>
-<p>
-    <b>WARNING:</b> You should never share cookies or an exported crawler configuration containing cookies
-    with untrusted parties, because they might use it to authenticate themselves to various websites with your credentials.
-</p>
-<p>
-    Example:
-</p>
+An array of cookies used to initialize the crawler.
+You can export the cookies from your own web browser,
+for example using the <a href="http://www.editthiscookie.com/" target="_blank" rel="noopener">EditThisCookie</a> plugin.
+This setting is typically used to start crawling when logged in to certain websites.
+The array might be null or empty, in which case the crawler will start with no cookies.
+
+Note that if the <a href="#option-cookiespersistence">cookie persistence</a>
+setting is <b>Over all crawler runs</b>, the cookies array will be overwritten
+with fresh cookies from the crawler whenever it successfully finishes.
+
+<b>WARNING:</b> You should never share cookies or an exported crawler configuration containing cookies
+with untrusted parties, because they might use it to authenticate themselves to various websites with your credentials.
+
+Example:
 
 ```json
 [
@@ -693,10 +693,39 @@ TODO
 </table>
 
 
-## Results
+## Crawling results
 
-TODO
+The crawling results are stored in the default dataset associated with the actor run,
+from where you can export them to formats such as JSON, XML, CSV or Excel.
+For each page visited, the crawler stores into the dataset a single
+[Request object](#requestObject), which contains
+all the details about the page, including results from the [Page function](#page-function).
 
+To download the results, use the
+[Get dataset items](https://apify.com/docs/api/v2#/reference/datasets/item-collection)
+API endpoint, which looks as follows:
+
+```
+https://api.apify.com/v2/datasets/[DATASET_ID]/items?format=json
+```
+
+Where `[DATASET_ID]` is the ID of actor's run dataset,
+which you can find the Run object returned when starting the actor.
+The `format` parameter can be also `xml`, `xlsx`, `csv` etc.
+
+To download the data in simplified format as provided by the legacy Crawler
+product, add the `simplified=1` query parameter. For example:
+
+```
+https://api.apify.com/v2/datasets/[DATASET_ID]/items?format=json&simplified=1
+```
+
+It will looks as follows:
+
+
+
+The legacy Crawler product allowed downloading simplified crawling results.
+To get the results  
 
 
 ## Request object

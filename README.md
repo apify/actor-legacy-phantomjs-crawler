@@ -2,7 +2,7 @@
 
 The actor implements the legacy Apify Crawler product.
 It uses [PhantomJS](http://phantomjs.org/) headless browser to recursively
-crawl websites and extract data from them using a piece of JavaScript code.
+crawl websites and extract data from them using a front-end JavaScript code.
 Since PhantomJS is no longer developed and supported,
 for new projects, we recommend to use the [`apify/web-scraper`](https://apify.com/apify/web-scraper) actor,
 which provides similar functionality, but is based on the modern headless Chrome browser.
@@ -16,15 +16,22 @@ in order to enable users to seamlessly migrate their crawlers.
 Note that there are several differences between this actor and legacy Apify Crawler:
 
 - The **Cookies persistence** setting of **Over all crawler runs**
-  is only supported when running the actor as a task. When you run the actor directly and use the setting,
+  is only supported when running the actor as a [task](https://apify.com/docs/tasks).
+  When you run the actor directly and use this setting,
   the actor will fail and print an error to log.
 - In **Page function**, the `context` object passed to the function has a slightly different properties:
   - `stats` object contains only a subset of the original statistics
   - `actExecutionId` and `actId` properties are not defined
 - The **Finish webhook URL** and **Finish webhook data** settings
   are no longer supported, please use the [webhooks](https://apify.com/docs/webhooks) for actors instead.
-  If you pass these fields when calling the actor, you will receive an error, to fail fast rather than silently later.
-- The **Test URL** setting is not supported.
+  If you pass these fields when calling the actor, you will receive an error.
+- The actor supports legacy **proxy settings** fields `proxyType`, `proxyGroups` and `customProxies`,
+  but their values are not checked. If these settings are invalid,
+  the actor will start normally and might crawl the pages with invalid proxy settings,
+  most likely producing invalid results.
+  It is recommended to use the new **Proxy configuration** (`proxyConfiguration`)
+  field instead, which is correctly validated before the actor is started.   
+- The **Test URL** feature is not supported.
   
 <!-- TODO:
 For more details how to migrate your crawlers to this actor, please see our blog post.
@@ -32,7 +39,7 @@ For more details how to migrate your crawlers to this actor, please see our blog
 
 ## Overview
 
-This actor provides a web crawler for developers that enables you to scrape data from
+This actor provides a web crawler for developers that enables scraping data from
 any website using the primary programming language of the web: JavaScript.
 
 In order to extract structured data from a website, you only need two things. First, tell the crawler which pages it
@@ -96,7 +103,8 @@ Maximum label length is 100 characters and maximum URL length is 2000 characters
 
 ## Pseudo-URLs
 
-The **Pseudo-URLs** (`crawlPurls`) field specifies which pages will be visited by the crawler using a <i>pseudo-URLs</i> (PURL)
+The **Pseudo-URLs** (`crawlPurls`) field specifies which pages will be visited by the crawler using
+the so-called <i>pseudo-URLs</i> (PURL)
 format. PURL is simply a URL with special directives enclosed in `[]` brackets.
 Currently, the only supported directive is `[regexp]`, which defines
 a JavaScript-style regular expression to match against the URL.
@@ -129,15 +137,15 @@ your JavaScript code to determine which page is currently open
 Note that you don't need to use this setting at all,
 because you can completely control which pages the crawler will access, either using the
 <a href="#intercept-request-function">Intercept request function</a>
-or using `context.enqueuePage()` call inside the <a href="#page-function">Page function</a>.
+or by calling `context.enqueuePage()` inside the <a href="#page-function">Page function</a>.
 
 Maximum label length is 100 characters
 and maximum PURL length is 1000 characters.
 
 ## Clickable elements
 
-Contains a CSS selector used to find links to other web pages.
-The crawler clicks all DOM elements matching this selector
+The **Clickable elements** (`clickableElementsSelector`) field contains a CSS selector used to find links to other web pages.
+On each page, the crawler clicks all DOM elements matching this selector
 and then monitors whether the page generates a navigation request.
 If a navigation request is detected, the crawler checks whether it matches
 <a href="#pseudo-urls">Pseudo-URLs</a>,
@@ -169,14 +177,15 @@ or pages enqueued using <code>enqueuePage()</code>.
 
 ## Page function
 
-A user-provided JavaScript function that is executed in the context of every page loaded by
+The **Page function** (`pageFunction`) field contains
+a user-provided JavaScript function that is executed in the context of every web page loaded by
 the crawler.
 Page function is typically used to extract some data from the page, but it can also be used
 to perform some non-trivial
 operation on the page, e.g. handle AJAX-based pagination.
 
 <b>IMPORTANT:</b> This actor is using <a href="http://phantomjs.org/" target="_blank" rel="noopener">PhantomJS</a>
-headless web-browser, which only supports JavaScript ES5.1 standard
+headless web browser, which only supports JavaScript ES5.1 standard
 (read more in a <a href="https://ariya.io/2014/08/phantomjs-2-and-javascript-goodies" target="_blank" rel="noopener">blog post about PhantomJS 2.0</a>).
 
 The basic page function with no effect has the following signature:
@@ -191,10 +200,12 @@ The function can return an arbitrary JavaScript object (including array, string,
 this value will be saved in the crawling results as the <code>pageFunctionResult</code>
 field of the <a href="#request-object">Request object</a> corresponding to the web page
 on which the <code>pageFunction</code> was executed.
-Note that Apify provides crawling results in a computer-friendly form (JSON, JSONL, XML or RSS format),
+The crawling results are stored in the default [dataset](https://apify.com/docs/storage#dataset)
+associated with the actor run, from where they can be downloaded
+in a computer-friendly form (JSON, JSONL, XML or RSS format),
 as well as in a human-friendly tabular form (HTML or CSV format).
 If the <code>pageFunction</code>'s return value is an array,
-its elements will be displayed as separate rows in such a table,
+its elements can be displayed as separate rows in such a table,
 to make the results more readable.
 
 The function accepts a single argument called <code>context</code>,
@@ -238,9 +249,9 @@ which is an object with the following properties and functions:
     </tr>
     <tr>
         <td id="context-skipOutput"><code>skipOutput()</code></td>
-        <td>If called, no information about the current page will be saved to the Results,
+        <td>If called, no information about the current page will be saved to the results,
             including the page function result itself.
-            This is useful to reduce the size of the output JSON by skipping unimportant pages.
+            This is useful to reduce the size of the results by skipping unimportant pages.
             Note that if the page function throws an exception, the <code>skipOutput()</code>
             call is ignored and the page is outputted anyway, so that the user has a chance
             to determine whether there was an error
@@ -302,8 +313,8 @@ which is an object with the following properties and functions:
     </tr>
     <tr>
         <td id="context-saveCookies"><code>saveCookies([cookies]) </code></td>
-        <td>Saves current cookies of the current PhantomJS browser to the crawler's
-        <a href="#cookies">Initial cookies</a>.
+        <td>Saves current cookies of the current PhantomJS browser to the actor task's
+        <a href="#cookies">Initial cookies</a> setting.
         All subsequently started PhantomJS processes will use these cookies.
         For example, this is useful to store a login.
         Optionally, you can pass an array of cookies to set to the browser before saving (in
@@ -324,15 +335,17 @@ which is an object with the following properties and functions:
         </td>
     </tr>
     <tr>
-        <td id="context-actExecutionId"><code>actExecutionId</code></td>
-        <td>String containing ID of this crawler execution. It might be used to control
-            the crawler using the <a href="http://apify.com/docs/api/v1">API</a>,
+        <td id="context-actorRunId"><code>actorRunId</code></td>
+        <td>String containing ID of this actor run. It might be used to control
+            the actor using the <a href="http://apify.com/docs/api/v2">API</a>,
             e.g. to stop it or fetch its results.
         </td>
     </tr>
     <tr>
-        <td id="context-actId"><code>actId</code></td>
-        <td>String containing ID of the actor. TODO: This is not correct!!!
+        <td id="context-actorRunId"><code>actorTaskId</code></td>
+        <td>String containing ID of the actor task, or <code>null</code> if actor is run directly.
+            The ID might be used to control
+            the task using the <a href="http://apify.com/docs/api/v2">API</a>.
         </td>
     </tr>
     </tbody>
@@ -387,7 +400,8 @@ function pageFunction(context) {
 
 ## Intercept request function
 
-A user-provided JavaScript function that is called whenever
+The **Intercept request function** (`interceptRequest`) field contains
+a user-provided JavaScript function that is called whenever
 a new URL is about to be added to the crawling queue,
 which happens at the following times:
 
@@ -500,28 +514,29 @@ on the return value of the <code>interceptRequest</code> function in the followi
     requested URL, but does not open it to find out which URL it eventually redirects to.
 </p>
 
-## Proxies
 
-TODO: Describe new settings instead...
+## Proxy configuration
 
-### Option `proxyType`
+The **Proxy configuration** (`proxyConfiguration`) option enables you to set
+proxies that will be used by the crawler in order to prevent its detection by target websites.
+You can use both [Apify Proxy](https://apify.com/proxy)
+as well as custom HTTP or SOCKS5 proxy servers.
 
-Specifies the type of proxy servers that will be used by the crawler in order to hide its origin.
-The following table lists all available options:
+The following table lists the available options of the proxy configuration setting:
 
 <table class="table table-bordered table-condensed">
     <tbody>
     <tr>
-        <th><b>None</b><br><code>NONE</code></td>
+        <th><b>None</b></td>
         <td>
             Crawler will not use any proxies.
             All web pages will be loaded directly from IP addresses of Apify servers running on Amazon Web Services.
         </td>
     </tr>
     <tr>
-        <th><b>Apify Proxy (automatic)</b><br><code>AUTO</code></td>
+        <th><b>Apify&nbsp;Proxy&nbsp;(automatic)</b></td>
         <td>
-            The crawler will load all web pages using the <a href="https://apify.com/proxy">Apify Proxy</a>
+            The crawler will load all web pages using <a href="https://apify.com/proxy">Apify Proxy</a>
             in the automatic mode. In this mode, the proxy uses all proxy groups
             that are available to the user, and for each new web page it automatically selects the proxy
             that hasn't been used in the longest time for the specific hostname,
@@ -531,67 +546,53 @@ The following table lists all available options:
         </td>
     </tr>
     <tr>
-        <th><b>Apify Proxy (selected groups)</b><br><code>SELECTED_PROXY_GROUPS</code></td>
+        <th><b>Apify&nbsp;Proxy&nbsp;(selected&nbsp;groups)</b></td>
         <td>
-            The crawler will load all web pages using the <a href="https://apify.com/proxy">Apify Proxy</a>
+            The crawler will load all web pages using <a href="https://apify.com/proxy">Apify Proxy</a>
             with specific groups of target proxy servers.
-            Please refer to the <a href="#option-proxygroups">proxy groups</a> section for more details.
         </td>
     </tr>
     <tr>
-        <th><b>Custom proxies</b><br><code>CUSTOM</code></td>
+        <th><b>Custom&nbsp;proxies</b></td>
         <td>
-            Enables the crawler to use a custom list of proxy servers.
-            Please refer to the <a href="#option-customproxies">custom proxies</a>
-            section for more details.
+            <p>
+            The crawler will use a custom list of proxy servers.
+            The proxies must be specified in the <code>scheme://user:password@host:port</code> format,
+            multiple proxies should be separated by a space or new line.
+            The URL scheme can be either <code>http</code> or <code>socks5</code>.
+            User and password might be omitted, but the port must always be present.
+            </p>
+            <p>
+                Example:
+            </p>
+            <pre><code class="language-none">http://bob:password@proxy1.example.com:8000
+            http://bob:password@proxy2.example.com:8000</code></pre>
         </td>
     </tr>
     </tbody>
 </table>
 
-Note that the custom proxy used to fetch a specific page
+Note that the proxy server used to fetch a specific page
 is stored to the <code>proxy</code> field of the <a href="#requestObject">Request object</a>.
 Note that for security reasons, the usernames and passwords are redacted from the proxy URL.
 
-### Option `proxyGroups`
+The proxy configuration can be set programmaticaly when calling the actor using API
+using the `proxyConfiguration` field. It accepts a JSON object with the following structure:
 
-<p>
-    <i>This field is only available for the <b>Selected proxy groups</b> option of the <a href="#option-proxytype">proxy type</a> field.</i>
-</p>
-<p>
-    The crawler will use <a href="https://apify.com/proxy">Apify Proxy</a> with target proxies from the selected proxy groups.
-    Each new web page will be served by a target proxy server that hasn't been used in the longest time for the specific hostname,
-    in order to reduce the chance of detection by the website.
-    You can view the list of available groups
-    on the <a href="https://my.apify.com/proxy" target="_blank" rel="noopener">Proxy</a> page in the app.
-</p>
-<p>
-    If you prefer to use your own proxy servers, select the <b>Custom proxies</b> option in the <a href="#option-proxytype">proxy type</a> field
-    and then enter the proxy servers into the
-    <a href="#option-customproxies">custom proxies</a> field.
-</p>
+```javascript
+{
+    // Indicates whether to use Apify Proxy or not.
+    "useApifyProxy": Boolean,
 
-### Option `customProxies`
+    // Array of Apify Proxy groups, only used if "useApifyProxy" is true.
+    // If missing or null, Apify Proxy will use the automatic mode.
+    "apifyProxyGroups": String[],
 
-<p>
-    <i>This field is only available for the <b>Custom proxies</b> option of the <a href="#option-proxytype">proxy type</a> field.</i>
-</p>
-<p>
-    A list of custom proxy servers to be used by the crawler.
-    Each proxy should be specified in the <code>scheme://user:password@host:port</code> format, multiple proxies should be separated by a space or new line.
-    The URL scheme defines the proxy type, possible values are <code>http</code> and <code>socks5</code>.
-    User and password might be omitted, but the port must always be present.
-    Separate proxies are separated by spaces or new lines.
-</p>
-<p>
-    Example:
-</p>
-<pre><code class="language-none">http://bob:password@proxy1.example.com:8000
-http://bob:password@proxy2.example.com:8000</code></pre>
-<p>
-    If you want to combine your custom proxies with <a href="https://apify.com/proxy">Apify Proxy</a> groups, or if you wish to use the Apify Proxy
-    rotation and proxy selection system for your custom proxies, please let us know at <a href="mailto:support@apify.com">support@apify.com</a>.
-</p>
+    // Array of custom proxy URLs, in "scheme://user:password@host:port" format.
+    // If missing or null, custom proxies are not used.
+    "proxyUrls": String[],
+}
+```
 
 ## Cookies
 
@@ -690,6 +691,13 @@ TODO
         </tr>
     </tbody>
 </table>
+
+
+## Results
+
+TODO
+
+
 
 ## Request object
 

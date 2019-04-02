@@ -1,6 +1,6 @@
 # Legacy PhantomJS Crawler
 
-The actor implements the legacy Apify Crawler product.
+This actor implements the legacy Apify Crawler product.
 It uses [PhantomJS](http://phantomjs.org/) headless browser to recursively
 crawl websites and extract data from them using a front-end JavaScript code.
 Note that PhantomJS is no longer developed by the community
@@ -697,35 +697,71 @@ Example:
 
 The crawling results are stored in the default dataset associated with the actor run,
 from where you can export them to formats such as JSON, XML, CSV or Excel.
-For each page visited, the crawler stores into the dataset a single
-[Request object](#requestObject), which contains
-all the details about the page, including results from the [Page function](#page-function).
+For each web page visited, the crawler pushes a single
+[Request object](#requestObject) with all the details about the page into the dataset.
 
-To download the results, use the
+To download the results, call the
 [Get dataset items](https://apify.com/docs/api/v2#/reference/datasets/item-collection)
-API endpoint, which looks as follows:
+API endpoint:
 
 ```
 https://api.apify.com/v2/datasets/[DATASET_ID]/items?format=json
 ```
 
-Where `[DATASET_ID]` is the ID of actor's run dataset,
+where `[DATASET_ID]` is the ID of actor's run dataset,
 which you can find the Run object returned when starting the actor.
-The `format` parameter can be also `xml`, `xlsx`, `csv` etc.
+The response looks as follows:
 
-To download the data in simplified format as provided by the legacy Crawler
-product, add the `simplified=1` query parameter. For example:
+```json
+[{
+  "loadedUrl": "https://www.example.com/",
+  "requestedAt": "2019-04-02T21:27:33.674Z",
+  "type": "StartUrl",
+  "label": "START",
+  "pageFunctionResult": [
+    {
+      "product": "iPhone X",
+      "price": 699
+    },
+    {
+      "product": "Samsung Galaxy",
+      "price": 499
+    }
+  ],
+  ...
+},
+...
+]
+```
+
+To download the data in simplified format known in the legacy Apify Crawler
+product, add the `fields=url,pageFunctionResult,errorInfo`
+and `unwind=pageFunctionResult` query parameters:
 
 ```
-https://api.apify.com/v2/datasets/[DATASET_ID]/items?format=json&simplified=1
+https://api.apify.com/v2/datasets/[DATASET_ID]/items?format=json&fields=url,pageFunctionResult,errorInfo&unwind=pageFunctionResult
 ```
 
-It will looks as follows:
+The response will look like this:
 
+```javascript
+[{
+  "url": "https://www.example.com/",
+  "errorInfo": "",
+  "product": "iPhone X",
+  "price": 699
+},
+{
+  "url": "https://www.example.com/",
+  "errorInfo": "",
+  "product": "Samsung Galaxy",
+  "price": 499
+}]
+```
 
-
-The legacy Crawler product allowed downloading simplified crawling results.
-To get the results  
+To get the results in other formats, set `format` query parameter to `xml`, `xlsx`, `csv`, `html`, etc.
+For full details, see the [Get dataset items](https://apify.com/docs/api/v2#/reference/datasets/item-collection)
+endpoint in API reference.
 
 
 ## Request object

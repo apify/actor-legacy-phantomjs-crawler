@@ -599,26 +599,23 @@ It accepts a JSON object with the following structure:
 
 ## Cookies
 
-
-
-TODO
-
-### Option `cookies`
-
-An array of cookies used to initialize the crawler.
+The **Initial cookies** (`cookies`) option enables you to specify
+a JSON array with cookies that will be used by the crawler on start. 
 You can export the cookies from your own web browser,
 for example using the <a href="http://www.editthiscookie.com/" target="_blank" rel="noopener">EditThisCookie</a> plugin.
 This setting is typically used to start crawling when logged in to certain websites.
 The array might be null or empty, in which case the crawler will start with no cookies.
 
-Note that if the <a href="#option-cookiespersistence">cookie persistence</a>
-setting is <b>Over all crawler runs</b>, the cookies array will be overwritten
+Note that if the <a href="#cookies-persistence-option">Cookie persistence</a>
+setting is <b>Over all crawler runs</b> and the actor is started from within a
+<a href="https://apify.com/docs/tasks">task</a>
+the cookies array on the task will be overwritten
 with fresh cookies from the crawler whenever it successfully finishes.
 
-<b>WARNING:</b> You should never share cookies or an exported crawler configuration containing cookies
+<b>SECURITY NOTE:</b> You should never share cookies or an exported crawler configuration containing cookies
 with untrusted parties, because they might use it to authenticate themselves to various websites with your credentials.
 
-Example:
+Example of **Initial cookies** setting:
 
 ```json
 [
@@ -645,13 +642,13 @@ Example:
 ]
 ```
 
-### Option `cookiesPersistence`
+### Cookies persistence option
 
-<p>
-    Indicates how the crawler saves and reuses cookies.
-    When you start the crawler, the first PhantomJS process will
-    use the cookies defined by the <a href="#option-cookies">cookies</a> setting.
-    Subsequent PhantomJS processes will use cookies as follows:
+The **Cookies persistence** (`cookiesPersistence`) option
+indicates how the crawler saves and reuses cookies.
+When you start the crawler, the first PhantomJS process will
+use the cookies defined by the <a href="#cookies">cookies</a> setting.
+Subsequent PhantomJS processes will use cookies as follows:
 </p>
 <table class="table table-bordered">
     <tbody>
@@ -661,7 +658,7 @@ Example:
                 Cookies are only maintained separately by each PhantomJS crawling process
                 for the lifetime of that process. The cookies are not shared between crawling processes.
                 This means that whenever the crawler rotates its IP address, it will start
-                again with cookies defined by the <a href="#option-cookies">cookies</a> setting.
+                again with cookies defined by the <a href="#cookies">cookies</a> setting.
                 Use this setting for maximum privacy and to avoid detection of the crawler.
                 This is the <b>default</b> option.
             </td>
@@ -682,10 +679,11 @@ Example:
             <td><b>Over all crawler runs<br><code>"OVER_CRAWLER_RUNS"</code></b></td>
             <td>
                 This setting is similar to <b>Per full crawler run</b>,
-                the only difference is that if the crawler finishes with <code>SUCCEEDED</code> status,
+                the only difference is that if the actor finishes with <code>SUCCEEDED</code> status,
                 its current cookies are automatically saved
-                to the <a href="#option-cookies">cookies</a> setting
-                so that new crawler run start where the previous run left off.
+                to the <a href="#cookies">cookies</a> setting of the actor task
+                used to start the actor,
+                so that new crawler run starts where the previous run left off.
                 This is useful to keep login cookies fresh and avoid their expiration.
             </td>
         </tr>

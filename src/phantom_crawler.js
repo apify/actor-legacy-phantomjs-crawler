@@ -7,7 +7,6 @@ const tmp = require('tmp');
 const express = require('express');
 const bodyParser = require('body-parser');
 const Apify = require('apify');
-const log = require('apify-shared/log');
 const { spawn } = require('child_process');
 const utils = require('./utils');
 const LinkedList = require('apify-shared/linked_list');
@@ -15,6 +14,7 @@ const { ACTOR_EVENT_NAMES } = require('apify-shared/consts');
 const { PageManager, AFTER_LOAD_UPDATABLE_REQUEST_FIELDS } = require('./page_manager');
 const LiveViewServer = require('./live_view_server');
 
+const { log } = Apify.utils;
 
 // resolve path to 'crawler-slave.js' here so that an error it thrown early if it's not available
 const slaveScriptPath = require.resolve('./phantom_scripts/crawler-slave.js');
@@ -211,6 +211,7 @@ class PhantomCrawler {
         if (this.proxyConfiguration && this.proxyConfiguration.useApifyProxy && !process.env.APIFY_PROXY_PASSWORD) {
             throw new Error('To use Apify Proxy, the APIFY_PROXY_PASSWORD environment variable must be set.');
         }
+        this.apifyProxyPassword = process.env.APIFY_PROXY_PASSWORD;
 
         // to generate unique slave IDs
         this.nextSlaveId = INITIAL_SLAVE_ID;
@@ -303,57 +304,65 @@ class PhantomCrawler {
         if (this.isRunning) throw new Error('Crawler is already running');
         this.isRunning = true;
 
-        // TODO: A lot of things here can be done in parallel for speedup
+        // Run things in parallel to speed this up
+        await Promise.all([
+            this.pageManager.initialize(),
+            this.liveViewServer.start(),
+            (async () => {
+                // Initialize state
+                const state = await Apify.getValue(STATE_KEY);
+                if (state) {
+                    this.isBootstrapFinished = state.isBootstrapFinished;
+                    this.persistedCookies = state.persistedCookies;
+                }
+            })(),
+            (async () => {
+                // Start HTTP server
+                await utils.promisifyServerListen(this.httpServer)();
+                const addr = this.httpServer.address();
+                this.port = addr.port;
+                log.debug(`${LOG_PREFIX}Started HTTP server`, { serverUrl: `http://localhost:${addr.port}` });
+            })(),
+            (async () => {
+                // Create temporary dir where all files will be stored (don't delete it for easier debugging)
+                this.tempDirPath = await util.promisify(tmp.dir)({ keep: true });
+                this.configPath = path.join(this.tempDirPath, 'config.json');
+                this.cookiesPath = path.join(this.tempDirPath, 'cookies.json');
+                log.debug(`${LOG_PREFIX}Created temporary directory`, { tempDirPath: this.tempDirPath });
 
-        await this.pageManager.initialize();
-
-        await this.liveViewServer.start();
-
-        const state = await Apify.getValue(STATE_KEY);
-        if (state) {
-            this.isBootstrapFinished = state.isBootstrapFinished;
-            this.persistedCookies = state.persistedCookies;
-        }
-
-        // Start HTTP server
-        await utils.promisifyServerListen(this.httpServer)();
-        const addr = this.httpServer.address();
-        this.port = addr.port;
-        log.debug(`${LOG_PREFIX}Started HTTP server`, { serverUrl: `http://localhost:${addr.port}` });
-
-        // Create temporary dir where all files will be stored (don't delete it for easier debugging)
-        this.tempDirPath = await util.promisify(tmp.dir)({ keep: true });
-        this.configPath = path.join(this.tempDirPath, 'config.json');
-        this.cookiesPath = path.join(this.tempDirPath, 'cookies.json');
-        log.debug(`${LOG_PREFIX}Created temporary directory`, { tempDirPath: this.tempDirPath });
-
-        // Write crawler configuration to file
-        const config = inputToConfig(this.input);
-        await writeFilePromised(this.configPath, JSON.stringify(config, null, 2));
-
-        // Generate cookies.json file, either from persistent cookies (after migration or actor restart), or from input
-        const cookies = this.persistedCookies || this.input.cookies;
-        if (cookies) {
-            log.debug('Loading cookies', { cookiesCount: cookies.length });
-            const cookiesJson = JSON.stringify(cookies, null, 2);
-            await writeFilePromised(this.cookiesPath, cookiesJson);
-        }
+                await Promise.all([
+                    (async () => {
+                        // Write crawler configuration to file
+                        const config = inputToConfig(this.input);
+                        await writeFilePromised(this.configPath, JSON.stringify(config, null, 2));
+                    })(),
+                    (async () => {
+                        // Generate cookies.json file, either from persistent cookies (after migration or actor restart), or from input
+                        const cookies = this.persistedCookies || this.input.cookies;
+                        if (cookies) {
+                            log.debug('Loading cookies', { cookiesCount: cookies.length });
+                            const cookiesJson = JSON.stringify(cookies, null, 2);
+                            await writeFilePromised(this.cookiesPath, cookiesJson);
+                        }
+                    })(),
+                ]);
+            })(),
+            (async () => {
+                // Adjust AutoscaledPool's desiredConcurrency to speed up the start of crawling
+                const memInfo = await Apify.getMemoryInfo();
+                const min = this.autoscaledPool.minConcurrency;
+                const max = this.autoscaledPool.maxConcurrency;
+                const desired = Math.max(Math.min(Math.floor(memInfo.freeBytes / PHANTOMJS_PROCESS_ESTIMATED_MEMORY_BYTES), max), min);
+                this.autoscaledPool.desiredConcurrency = desired;
+                log.info('Adjusted initial concurrency of the autoscaled pool', { min, max, desired, freeMbytes: Math.round(memInfo.freeBytes / (10 ** 6)) });
+            })(),
+        ]);
 
         // Let the heart beat
         this.heartbeatIntervalId = setInterval(
             this._executorHeartbeat.bind(this),
             DEFAULT_EXECUTOR_HEARTBEAT_MILLIS,
         );
-
-        log.debug(`${LOG_PREFIX}Starting auto-scaled pool`);
-
-        // Adjust AutoscaledPool's desiredConcurrency to speed up the start of crawling
-        const memInfo = await Apify.getMemoryInfo();
-        const min = this.autoscaledPool.minConcurrency;
-        const max = this.autoscaledPool.maxConcurrency;
-        const desired = Math.max(Math.min(Math.floor(memInfo.freeBytes / PHANTOMJS_PROCESS_ESTIMATED_MEMORY_BYTES), max), min);
-        this.autoscaledPool.desiredConcurrency = desired;
-        log.info('Adjusted initial concurrency of the autoscaled pool', { min, max, desired, freeMbytes: Math.round(memInfo.freeBytes / (10 ** 6)) });
 
         // Attach a listener to handle migration events gracefully.
         Apify.events.on(ACTOR_EVENT_NAMES.MIGRATING, this._pauseOnMigration.bind(this));
@@ -905,7 +914,7 @@ class PhantomCrawler {
                 // Automatic mode
                 username = `session-${_.random(9999999999)}`;
             }
-            proxyUrl = `http://${username}:${process.env.APIFY_PROXY_PASSWORD}@proxy.apify.com:8000`;
+            proxyUrl = `http://${username}:${this.apifyProxyPassword}@proxy.apify.com:8000`;
             proxyPhantomjsArgs = utils.proxyUrlToPhantomArgs(proxyUrl);
             proxyPublicInfo = utils.canonicalizeProxyUrl(proxyUrl, username);
         } else if (this.customProxyUrls && this.customProxyUrls.length > 0) {

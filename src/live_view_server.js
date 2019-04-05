@@ -3,9 +3,11 @@ const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const socketio = require('socket.io');
+const Apify = require('apify');
 const utils = require('./utils');
-const log = require('apify-shared/log');
 const { ENV_VARS, LOCAL_ENV_VARS } = require('apify-shared/consts');
+
+const { log } = Apify.utils;
 
 const DELETE_SCREENSHOT_FILE_TIMEOUT_MILLIS = 10 * 1000;
 

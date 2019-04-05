@@ -1,6 +1,7 @@
 const Apify = require('apify');
-const log = require('apify-shared/log');
 const PhantomCrawler = require('./phantom_crawler');
+
+const { log } = Apify.utils;
 
 Apify.main(async () => {
     const input = await Apify.getInput();
@@ -13,14 +14,18 @@ Apify.main(async () => {
     const requestQueue = await Apify.openRequestQueue();
     const dataset = await Apify.openDataset();
 
-    // TODO: For increased security, delete sensitive environment variables from the current process,
-    // but also for init, is it even needed?
-
     const crawler = new PhantomCrawler({
         input,
         requestQueue,
         dataset,
     });
+
+    // For increased security, delete sensitive environment variables from the current process,
+    // so they don't leak into PhantomJS processes
+    delete process.env.APIFY_PROXY_PASSWORD;
+    delete process.env.APIFY_TOKEN;
+    delete process.env.APIFY_USER_ID;
+    delete process.env.APIFY_CONTAINER_URL;
 
     await crawler.run();
 

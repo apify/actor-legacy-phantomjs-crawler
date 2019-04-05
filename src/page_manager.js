@@ -1,8 +1,9 @@
 const _ = require('underscore');
 const util = require('util');
 const Apify = require('apify');
-const log = require('apify-shared/log');
 const utils = require('apify-shared/utilities');
+
+const { log } = Apify.utils;
 
 /* global exports */
 

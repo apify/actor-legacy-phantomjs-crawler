@@ -88,7 +88,7 @@ class PageManager {
 
         this.pagesCrawled = null;
         this.pagesOutputted = null;
-        this.pagesInQueue = null
+        this.pagesInQueue = null;
     }
 
     async initialize() {
@@ -210,23 +210,22 @@ class PageManager {
         result.statusMessage = 'Request was fetched successfully';
         result.request = request;
 
+        // Pass current stats to the slave
+        result.request._stats = {
+            pagesCrawled: this.pagesCrawled,
+            pagesOutputted: this.pagesOutputted,
+            pagesInQueue: this.pagesInQueue,
+        };
+
         // Load referring request if needed
         if (request.referrerId) {
             const referringRawRequest = await this.requestQueue.getRequest(request.referrerId);
-
             if (referringRawRequest) {
                 const referringRequest = requestRawToLegacy(referringRawRequest);
-
-                // TODO: Handle stats! Why are they not given for non-referral requests???
-                // pass current stats to the slave
-                // const stats = _.clone(this.executor.stats);
-                // apiHelpers.transformActExecutionStats(stats);
-                result.request._stats = {};
-
                 if (referringRequest) {
                     this.fixLegacyRequestFromJson(referringRequest);
                     result.request.referrer = referringRequest;
-                } else if (result.request.referrerId) {
+                } else {
                     log.warning('Cannot find referring request', {
                         requestId: result.requestId,
                         referrerId: result.request.referrerId,

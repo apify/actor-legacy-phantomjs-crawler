@@ -22,7 +22,7 @@ Note that there are several differences between this actor and legacy Apify Craw
   When you run the actor directly and use this setting,
   the actor will fail and print an error to log.
 - In **Page function**, the `context` object passed to the function has a slightly different properties:
-  - `stats` object contains only a subset of the original statistics
+  - `stats` object contains only a subset of the original statistics. [See details](#context-stats)
   - `actExecutionId` and `actId` properties are not defined and were replaced by `actorRunId` and `actorTaskId`, respectively.
 - The **Finish webhook URL** and **Finish webhook data** settings
   are no longer supported, please use the [webhooks](https://apify.com/docs/webhooks) for actors instead.
@@ -330,8 +330,8 @@ which is an object with the following properties and functions:
     </tr>
     <tr>
         <td id="context-stats"><code>stats</code></td>
-        <td>An object containing a snapshot of statistics from the current crawl
-            (see API section on crawler run page for details).
+        <td>An object containing a snapshot of statistics from the current crawl.
+            It contains the following fields: `pagesCrawled`, `pagesOutputted` and `pagesInQueue`.
             Note that the statistics are collected <b>before</b>
             the current page has been crawled.
         </td>

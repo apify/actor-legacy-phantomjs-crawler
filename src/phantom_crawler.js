@@ -420,6 +420,7 @@ class PhantomCrawler {
             const { isBootstrapperAlive, slaveCount } = this.probeSlaves();
 
             // If bootstrapper slave process died before all startUrls were added to queue, restart it
+            // TODO: For increased security, we should run the phantom process under a low-privilege account
             const isBootstrapper = !isBootstrapperAlive && !this.isBootstrapFinished;
             const slave = this._spawnSlave(isBootstrapper);
             if (!slave) return;

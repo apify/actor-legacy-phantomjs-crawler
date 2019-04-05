@@ -2,9 +2,7 @@
   
 **Simple TODOs**  
 
-- Test `customData` works with both string and object
 - Test dot and dollar in cookies!
-
 
 - TEST MIGRATION: https://my.apify.com/crawlers/Yf7kdZZoRzzp2Jg6Q => https://my.apify.com/tasks/PmmhAGHpQ85dXTmKo#/runs/o6N3cu7RNnbTxJHyu
   maxParallelRequests empty sets it to default 50, it should be 1

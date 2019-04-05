@@ -134,6 +134,10 @@ const inputToConfig = (input) => {
     config.actorRunId = process.env.APIFY_ACTOR_RUN_ID || null;
     config.actorTaskId = process.env.APIFY_ACTOR_TASK_ID || null;
 
+    console.dir(config);
+
+    console.dir(process.env);
+
     // log.debug('Converted input to crawler configuration', { input, config });
 
     return config;

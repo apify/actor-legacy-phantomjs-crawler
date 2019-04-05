@@ -417,7 +417,7 @@ class PhantomCrawler {
      */
     async _runTaskFunction() {
         try {
-            const { isBootstrapperAlive, slaveCount } = this.probeSlaves();
+            const { isBootstrapperAlive } = this.probeSlaves();
 
             // If bootstrapper slave process died before all startUrls were added to queue, restart it
             // TODO: For increased security, we should run the phantom process under a low-privilege account
@@ -910,7 +910,7 @@ class PhantomCrawler {
             let username;
             if (this.proxyConfiguration.apifyProxyGroups && this.proxyConfiguration.apifyProxyGroups.length > 0) {
                 // Selected proxy groups
-                username = `groups-${this.proxyConfiguration.apifyProxyGroups.join(',')},session-${_.random(9999999999)}`;
+                username = `groups-${this.proxyConfiguration.apifyProxyGroups.join('+')},session-${_.random(9999999999)}`;
             } else {
                 // Automatic mode
                 username = `session-${_.random(9999999999)}`;

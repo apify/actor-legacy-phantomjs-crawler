@@ -183,7 +183,7 @@ Crawler.prototype.onUrlChanged = function onUrlChanged(targetUrl) {
     // interceptRequest() function wouldn't have 'context' which would confuse users!
     // (also happens at http://trackthemissingchild.gov.in/trackchild/photograph_missing.php?type=2)
     if( this.webPage && !crawlerUtils.areClientUtilsInjected(this.webPage) ) {
-        crawlerUtils.injectRequestObject(this.webPage, this.currentRequest, this.config.customData, this.config.actExecutionId, this.config._id);
+        crawlerUtils.injectRequestObject(this.webPage, this.currentRequest, this.config.customData, this.config.actorRunId, this.config._id);
     }
 
 	// In some pages, links to other pages (e.g. product details on http://www.supremenewyork.com/shop/all)
@@ -465,7 +465,7 @@ Crawler.prototype.onLoadFinished = function onLoadFinished(webPage, status) {
 			}
 		}
 
-		crawlerUtils.injectRequestObject( this.webPage, this.currentRequest, this.config.customData, this.config.actExecutionId, this.config._id );
+		crawlerUtils.injectRequestObject( this.webPage, this.currentRequest, this.config.customData, this.config.actorRunId, this.config._id );
 
         // when initiating the crawl, give control back to page's open() callback
         // (must be done after the page is injected with all the stuff)

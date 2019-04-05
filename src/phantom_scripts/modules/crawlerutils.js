@@ -542,18 +542,18 @@ exports.resolveClientScriptPath = function resolveClientScriptPath(path) {
 /**
  * Injects a request object into window.__context__ object on the web page.
  */
-exports.injectRequestObject = function injectRequestObject(page, request, customData, actExecutionId, actId) {
+exports.injectRequestObject = function injectRequestObject(page, request, customData, actorRunId, actorTaskId) {
 	"use strict";
 
-	page.evaluate( function _injectRequestObject(request, customData, actExecutionId, actId) {
+	page.evaluate( function _injectRequestObject(request, customData, actorRunId, actorTaskId) {
 		var context     = window.__context__   = window.__context__   || {};
 		var userFlags   = window.__userFlags__ = window.__userFlags__ || {};
 		var jsonStringify = window.__clientUtils__ && window.__clientUtils__.safeJsonStringify ? window.__clientUtils__.safeJsonStringify : JSON.stringify;
 		context.request = request;
         context.customData = customData;
         context.stats = request._stats;
-        context.actExecutionId = actExecutionId;
-        context.actId = actId;
+        context.actorRunId = actorRunId;
+        context.actorTaskId = actorTaskId;
         delete request._stats;
 		var requestId = request.id;
 		// attach special functions for user
@@ -645,7 +645,7 @@ exports.injectRequestObject = function injectRequestObject(page, request, custom
         };
 
 		return true;
-	}, request.explicitToJSON(true), customData, actExecutionId, actId);
+	}, request.explicitToJSON(true), customData, actorRunId, actorTaskId);
 	return true; // always successful
 };
 

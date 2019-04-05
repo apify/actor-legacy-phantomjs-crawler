@@ -5,7 +5,6 @@
 - Test `customData` works with both string and object
 - Test dot and dollar in cookies!
 
-- We need curly-language for webhooks, to supplement custom data!!!
 
 - TODO: Add context.actorRunId and actorTaskId !!!!
 

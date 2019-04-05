@@ -131,6 +131,9 @@ const inputToConfig = (input) => {
         'maxPageRetryCount', 'customHttpHeaders', 'cookies',
         'cookiesPersistence', 'customData');
 
+    config.actorRunId = process.env.APIFY_ACTOR_RUN_ID || null;
+    config.actorTaskId = process.env.APIFY_ACTOR_TASK_ID || null;
+
     // log.debug('Converted input to crawler configuration', { input, config });
 
     return config;

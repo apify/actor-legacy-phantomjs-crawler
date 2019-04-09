@@ -2,14 +2,6 @@
   
 **Simple TODOs**  
 
-- Test dot and dollar in cookies!
-
-- TEST MIGRATION: https://my.apify.com/crawlers/Yf7kdZZoRzzp2Jg6Q => https://my.apify.com/tasks/PmmhAGHpQ85dXTmKo#/runs/o6N3cu7RNnbTxJHyu
-  maxParallelRequests empty sets it to default 50, it should be 1
-
-- Feedback from testing:
-  - I’m getting “Error: Value of input.proxyGroups is not an array.” in apify/legacy-phantomjs-crawler after migration - CANNOT REPRODUCE
-  - Another one: “Error: Cannot start actor run with the provided actor task (Invalid value provided in options: Timeout is required [invalid-value])” - MAREK WILL FIX
   
   - avoid waiting for queue:  
   2019-03-26T08:40:44.453Z [S0000001] Crawling process is finished: The slave already opened 1 pages, reaching the 'maxCrawledPagesPerSlave' limit from the configuration.

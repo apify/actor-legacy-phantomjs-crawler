@@ -95,7 +95,7 @@ catch(e) {
 
 // Generate random User-Agent if rotateUserAgents is set
 if (config.rotateUserAgents) {
-    config.userAgent = constants.USER_AGENTS_LIST[utils.getRandomInt(0, constants.USER_AGENTS_LIST.length)];
+    config.userAgent = constants.USER_AGENT_LIST[utils.getRandomInt(0, constants.USER_AGENT_LIST.length)];
     if (config.customHttpHeaders && config.customHttpHeaders['User-Agent']) delete config.customHttpHeaders['User-Agent'];
 }
 

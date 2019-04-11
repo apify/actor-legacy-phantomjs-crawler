@@ -642,8 +642,6 @@ Example of **Initial cookies** setting:
 ]
 ```
 
-### Cookies persistence option
-
 The **Cookies persistence** (`cookiesPersistence`) option
 indicates how the crawler saves and reuses cookies.
 When you start the crawler, the first PhantomJS process will

@@ -22,5 +22,17 @@ Apify.main(async () => {
 
     await crawler.run();
 
-    log.info('Crawler finished, results were stored into the default dataset.');
+    const datasetId = requestQueue.datasetId;
+    if (!datasetId) {
+        log.info(`Crawler finished.
+
+Full results in JSON format:
+https://api.apify.com/v2/datasets/${datasetId}/items?format=json
+
+Simplified results in JSON format:
+https://api.apify.com/v2/datasets/${datasetId}/items?format=json&fields=url,pageFunctionResult,errorInfo&unwind=pageFunctionResult`);
+    } else {
+        log.info('Crawler finished.');
+    }
+
 });

@@ -232,7 +232,7 @@ which is an object with the following properties and functions:
         <td>A jQuery object, only available if the
             <strong>Inject jQuery</strong>
             setting is
-            enabled. <!--<?php/* TODO: Although the web page can include jQuery, you shouldnt.. */-->
+            enabled.
         </td>
     </tr>
     <tr>
@@ -453,7 +453,7 @@ The <code>context</code> is an object with the following properties:
             available if the
             <strong>Inject jQuery</strong>
             setting is
-            enabled. <!--<?php/* TODO: Although the web page can include jQuery, you shouldnt.. */?>-->
+            enabled.
         </td>
     </tr>
     <tr>

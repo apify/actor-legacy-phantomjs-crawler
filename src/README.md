@@ -12,14 +12,4 @@
   2019-03-26T08:41:03.203Z {"level":"INFO","msg":"Crawler finished, results were stored into the default dataset."}
   
 
-  
-  
-**MIGRATION**
 
-- For each crawler, create a new task (TODO: How to call them?)
-- Keep maxParallelCrawlers and set the memory accordingly (give or take)
-- Transform proxy configuration to new setting
-- Generate webhooks from finishWebhookUrl/finishWebhookData (TODO: need custom webhook stuff for this!)
-- `timeout` field is not working, it must be set as part of the actor run options,
-  and also overriden that way via API!
-  We need to migrate it correctly!

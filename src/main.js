@@ -22,7 +22,7 @@ Apify.main(async () => {
 
     await crawler.run();
 
-    const datasetId = requestQueue.datasetId;
+    const datasetId = dataset.datasetId;
     if (!datasetId) {
         log.info(`Crawler finished.
 

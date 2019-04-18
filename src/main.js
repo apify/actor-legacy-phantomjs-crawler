@@ -23,7 +23,7 @@ Apify.main(async () => {
     await crawler.run();
 
     const datasetId = dataset.datasetId;
-    if (!datasetId) {
+    if (datasetId) {
         log.info(`Crawler finished.
 
 Full results in JSON format:

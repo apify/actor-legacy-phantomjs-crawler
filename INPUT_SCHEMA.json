@@ -321,7 +321,7 @@
 
     "customData": {
       "title": "Custom data",
-      "type": ["object", "string", "number", "boolean", "array"],
+      "type": ["object", "string", "integer", "boolean", "array"],
       "nullable": true,
       "description": "A custom JSON object that is passed to <b>Page function</b> and intercept request function as <code>context.customData</code>. This setting is mainly useful if you're invoking the crawler using the API, so that you can pass some arbitrary parameters to your code.",
       "editor": "json"

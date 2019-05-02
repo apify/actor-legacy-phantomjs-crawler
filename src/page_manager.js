@@ -148,7 +148,7 @@ class PageManager {
 
         log.info('Page added to queue', {
             requestId: opInfo.requestId,
-            url: utils.truncate(request.url, 60, '...'),
+            url: utils.truncate(request.url, 200, '...'),
             forefront,
             wasAlreadyPresent: opInfo.wasAlreadyPresent,
         });

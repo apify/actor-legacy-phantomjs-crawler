@@ -364,5 +364,5 @@
       "editor": "textarea"
     }
   },
-  "required": []
+  "required": [ "startUrls" ]
 }

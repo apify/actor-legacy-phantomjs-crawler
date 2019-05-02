@@ -11,6 +11,20 @@ Apify.main(async () => {
         log.setLevel(log.LEVELS.DEBUG);
     }
 
+    // Set up finish webhook
+    if (input.finishWebhookUrl) {
+        await Apify.addWebhook({
+            requestUrl: input.finishWebhookUrl,
+            eventTypes: [
+                'ACTOR.RUN.SUCCEEDED',
+                'ACTOR.RUN.FAILED',
+                'ACTOR.RUN.ABORTED',
+                'ACTOR.RUN.TIMED_OUT',
+            ],
+            // TODO: Add custom data
+        });
+    }
+
     const requestQueue = await Apify.openRequestQueue();
     const dataset = await Apify.openDataset();
 

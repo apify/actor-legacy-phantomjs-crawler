@@ -321,7 +321,7 @@
 
     "customData": {
       "title": "Custom data",
-      "type": "object",
+      "type": ["object", "string", "number", "boolean", "array"],
       "nullable": true,
       "description": "A custom JSON object that is passed to <b>Page function</b> and intercept request function as <code>context.customData</code>. This setting is mainly useful if you're invoking the crawler using the API, so that you can pass some arbitrary parameters to your code.",
       "editor": "json"
@@ -344,6 +344,24 @@
       "default": "PER_PROCESS",
       "enum": ["PER_PROCESS", "PER_CRAWLER_RUN", "OVER_CRAWLER_RUNS"],
       "enumTitles": ["Per single crawling process only", "Per full crawler run", "Over all crawler runs"]
+    },
+
+    "finishWebhookUrl": {
+      "title": "Finish webhook URL",
+      "type": "string",
+      "nullable": true,
+      "maxLength": 1000,
+      "description": "A HTTP endpoint that receives a POST request right after every run of this actor finishes. The POST payload is a JSON object that has the following structure: <code>{ taskId: String, runId: String, data: String }</code>.<br><br>Note that this field is kept just for backwards compatibility and it uses the <a href='https://apify.com/docs/webhooks'>Apify Webhooks</a> infrastructure.",
+      "editor": "textfield"
+    },
+
+    "finishWebhookData": {
+      "title": "Finish webhook data",
+      "type": "string",
+      "nullable": true,
+      "maxLength": 10000,
+      "description": "Custom string that is sent in the POST payload of the finish webhook HTTP request, under the <code>data</code> property.",
+      "editor": "textarea"
     }
   },
   "required": []

@@ -53,7 +53,7 @@
       "title": "Page function",
       "type": "string",
       "nullable": true,
-      "description": "JavaScript function that is executed on every crawled page, use it to extract data from it.",
+      "description": "JavaScript function that is executed on every crawled page, use it to extract data from it. Note that only ES5.1 syntax is supported.",
       "prefill": "function pageFunction(context) {\n    // called on every page the crawler visits, use it to extract data from it\n    var $ = context.jQuery;\n    var result = {\n        title: $('title').text(),\n        myValue: $('TODO').text()\n    };\n    return result;\n}\n",
       "editor": "javascript"
     },
@@ -62,7 +62,7 @@
       "title": "Intercept request function",
       "type": "string",
       "nullable": true,
-      "description": "JavaScript function called whenever the crawler finds a link or form leading to a new web page.",
+      "description": "JavaScript function called whenever the crawler finds a link or form leading to a new web page. Note that only ES5.1 syntax is supported",
       "prefill": "function interceptRequest(context, newRequest) {\n    // called whenever the crawler finds a link to a new page,\n    // use it to override default behavior\n    return newRequest;\n}\n",
       "editor": "javascript"
     },

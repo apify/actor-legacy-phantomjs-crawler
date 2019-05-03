@@ -568,7 +568,7 @@ The following table lists the available options of the proxy configuration setti
                 Example:
             </p>
             <pre><code class="language-none">http://bob:password@proxy1.example.com:8000
-            http://bob:password@proxy2.example.com:8000</code></pre>
+http://bob:password@proxy2.example.com:8000</code></pre>
         </td>
     </tr>
     </tbody>

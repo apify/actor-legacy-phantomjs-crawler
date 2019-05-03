@@ -45,7 +45,7 @@ Full results in JSON format:
 https://api.apify.com/v2/datasets/${datasetId}/items?format=json
 
 Simplified results in JSON format:
-https://api.apify.com/v2/datasets/${datasetId}/items?format=json&fields=url,pageFunctionResult,errorInfo&unwind=pageFunctionResult`);
+https://api.apify.com/v2/datasets/${datasetId}/items?format=json&simplified=1`);
     } else {
         log.info('Crawler finished.');
     }

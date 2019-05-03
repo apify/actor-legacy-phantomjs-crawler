@@ -731,11 +731,10 @@ The response looks as follows:
 ```
 
 To download the data in simplified format known in the legacy Apify Crawler
-product, add the `fields=url,pageFunctionResult,errorInfo`
-and `unwind=pageFunctionResult` query parameters:
+product, add the `simplified=1` query parameter:
 
 ```
-https://api.apify.com/v2/datasets/[DATASET_ID]/items?format=json&fields=url,pageFunctionResult,errorInfo&unwind=pageFunctionResult
+https://api.apify.com/v2/datasets/[DATASET_ID]/items?format=json&simplified=1
 ```
 
 The response will look like this:

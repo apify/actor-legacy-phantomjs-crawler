@@ -38,8 +38,6 @@ const DEFAULT_MAX_CONCURRENCY = 100;
 
 const DEFAULT_EXECUTOR_HEARTBEAT_MILLIS = 5 * 1000;
 
-const SNAPSHOTS_UNTIL_PARALLEL_CRAWLER_COUNT = 1;
-
 const PHANTOMJS_COMMAND = 'phantomjs';
 
 // Let phantomjs use the lowest priority possible, to avoid blocking worker process
@@ -952,7 +950,21 @@ class PhantomCrawler {
             // For security, only pass a few selected environment variables to PhantomJS
             env: _.pick(process.env, 'HOME', 'HOSTNAME', 'OLDPWD', 'LANG', 'PATH', 'SHELL', 'SHLVL', 'TERM'),
         };
-        const childProcess = spawn(cmd, args, options);
+        let childProcess;
+        try {
+            childProcess = spawn(cmd, args, options);
+        } catch (e) {
+            // Try to recover from lack of memory
+            if (e.errno === 'ENOMEM' && this.autoscaledPool.desiredConcurrency > 1) {
+                log.error('Spawning new PhantomJS process failed due to the lack of memory, reducing AutoscaledPool desired concurrency in an attempt to recover', {
+                    desiredConcurrency: this.autoscaledPool.desiredConcurrency,
+                });
+                this.autoscaledPool.desiredConcurrency--;
+                return;
+            }
+
+            throw e;
+        }
 
         // It happened that these were undefineds
         if (!childProcess.stdout || !childProcess.stderr) {

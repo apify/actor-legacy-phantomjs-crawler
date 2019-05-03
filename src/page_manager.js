@@ -29,6 +29,18 @@ exports.AFTER_LOAD_UPDATABLE_REQUEST_FIELDS = [
 ];
 
 /**
+ * Helper function that parses string dates in legacy Request object into Date instances.
+ * They are typically lost during conversion to JSON.
+ */
+const fixLegacyRequestDates = (request) => {
+    ['requestedAt', 'loadingStartedAt', 'loadingFinishedAt', 'pageFunctionStartedAt', 'pageFunctionFinishedAt'].forEach((key) => {
+        if (request[key] && !_.isDate(request[key])) {
+            request[key] = utils.parseDateFromJson(request[key]);
+        }
+    });
+};
+
+/**
  * Converts legacy Crawler's `Request` object to `Apify.Request`.
  */
 const requestLegacyToRaw = (request) => {
@@ -45,13 +57,20 @@ const requestLegacyToRaw = (request) => {
         errorMessages: !request.errorInfo
             ? undefined
             : [request.errorInfo],
-        handledAt: request.pageFunctionFinishedAt,
+        handledAt: request.pageFunctionFinishedAt || null,
         retryCount: request._retryCount,
         // keepUrlFragment: request.keepUrlFragment, TODO ???
-        userData: _.omit(request, 'id', 'url', 'uniqueKey', 'method', 'postData', 'contentType', 'errorInfo', 'pageFunctionFinishedAt', '_retryCount'),
+        userData: _.omit(request, 'id', 'url', 'uniqueKey', 'method', 'postData', 'contentType', 'errorInfo', '_retryCount'),
     };
 
     const rawRequest = new Apify.Request(data);
+
+    // console.log('\nXXXXX requestLegacyToRaw');
+    // console.log('\nlegacyRequest');
+    // console.dir(request);
+    // console.log('\nrawRequest');
+    // console.dir(rawRequest);
+
     return rawRequest;
 };
 
@@ -72,6 +91,15 @@ const requestRawToLegacy = (rawRequest) => {
     request.errorInfo = rawRequest.errorMessages && rawRequest.errorMessages.length > 0
         ? _.last(rawRequest.errorMessages)
         : '';
+    request._retryCount = rawRequest.retryCount;
+
+    fixLegacyRequestDates(request);
+
+    // console.log('\nYYYYYYY requestRawToLegacy');
+    // console.log('\nrawRequest');
+    // console.dir(rawRequest);
+    // console.log('\nlegacyRequest');
+    // console.dir(request);
 
     return request;
 };
@@ -100,19 +128,6 @@ class PageManager {
         this.pagesCrawled = queueInfo.handledRequestCount;
         this.pagesInQueue = queueInfo.pendingRequestCount;
         this.pagesOutputted = datasetInfo.itemCount;
-    }
-
-    /**
-     * Helper function that parses string dates in Request object into Date instances.
-     */
-    fixLegacyRequestFromJson(request) {
-        [
-            'requestedAt', 'loadingStartedAt', 'loadingFinishedAt', 'pageFunctionStartedAt', 'pageFunctionFinishedAt'
-        ].forEach((key) => {
-            if (request[key]) {
-                request[key] = utils.parseDateFromJson(request[key]);
-            }
-        });
     }
 
     /**
@@ -224,7 +239,6 @@ class PageManager {
             if (referringRawRequest) {
                 const referringRequest = requestRawToLegacy(referringRawRequest);
                 if (referringRequest) {
-                    this.fixLegacyRequestFromJson(referringRequest);
                     result.request.referrer = referringRequest;
                 } else {
                     log.warning('Cannot find referring request', {
@@ -303,3 +317,4 @@ class PageManager {
 
 
 exports.PageManager = PageManager;
+exports.fixLegacyRequestDates = fixLegacyRequestDates;

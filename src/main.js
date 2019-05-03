@@ -13,6 +13,8 @@ Apify.main(async () => {
 
     // Set up finish webhook
     if (input.finishWebhookUrl) {
+        // TODO: Finish this, add custom data
+        throw new Error('The "finishWebhookUrl" is not yet fully supported, please use Actor Webhooks instead.');
         await Apify.addWebhook({
             requestUrl: input.finishWebhookUrl,
             eventTypes: [
@@ -21,7 +23,6 @@ Apify.main(async () => {
                 'ACTOR.RUN.ABORTED',
                 'ACTOR.RUN.TIMED_OUT',
             ],
-            // TODO: Add custom data
         });
     }
 

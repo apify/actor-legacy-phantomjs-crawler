@@ -11,7 +11,7 @@ const { spawn } = require('child_process');
 const utils = require('./utils');
 const LinkedList = require('apify-shared/linked_list');
 const { ACTOR_EVENT_NAMES } = require('apify-shared/consts');
-const { PageManager, AFTER_LOAD_UPDATABLE_REQUEST_FIELDS } = require('./page_manager');
+const { PageManager, fixLegacyRequestDates, AFTER_LOAD_UPDATABLE_REQUEST_FIELDS } = require('./page_manager');
 const LiveViewServer = require('./live_view_server');
 
 const { log } = Apify.utils;
@@ -604,7 +604,9 @@ class PhantomCrawler {
             const requestsToAdd = [];
             for (let i = 0; i < message.piggybackBufferedRequests.length; i++) {
                 request = message.piggybackBufferedRequests[i];
+                fixLegacyRequestDates(request);
                 log.debug('Add new request', { request });
+
                 if (!request) {
                     return softFail(`Some request in 'piggybackBufferedRequests' array is undefined (index: ${i}).`);
                 }
@@ -634,7 +636,6 @@ class PhantomCrawler {
                     }
                 }
 
-                this.pageManager.fixLegacyRequestFromJson(request);
                 requestsToAdd.push(request);
             }
 
@@ -696,7 +697,7 @@ class PhantomCrawler {
                     return softFail("The request defines the 'referrer' property; this is an error.");
                 }
 
-                this.pageManager.fixLegacyRequestFromJson(request);
+                fixLegacyRequestDates(request);
 
                 // If the page load failed, retry it a few times and then give up
                 // (don't update the request in database with data from crawler!)

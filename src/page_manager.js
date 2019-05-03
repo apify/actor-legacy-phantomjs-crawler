@@ -142,10 +142,11 @@ class PageManager {
         // but we want to keep the same behavior of the legacy Crawler product
         if (this.input.maxCrawledPages) {
             // NOTE: pageInQueue can be inaccurate, so we compute a heuristic estimate
-            const pagesInQueueLowerBound = Math.max(0, this.pagesInQueue * 0.95 - 10);
+            // TODO: This can use the hadMultipleClients for a more accurate estimate
+            const pagesInQueueLowerBound = Math.floor(Math.max(0, this.pagesInQueue * 0.95 - 10));
 
             if (pagesInQueueLowerBound + this.pagesCrawled >= this.input.maxCrawledPages) {
-                log.info('Skipping adding new page to the queue because too many pages already were crawled and/or added to queue', {
+                log.info('Skipping adding new page to the queue because too many pages were already crawled or added to queue', {
                     request: _.pick(request, 'url', 'uniqueKey'),
                     pagesCrawled: this.pagesCrawled,
                     pagesInQueueLowerBound: pagesInQueueLowerBound,

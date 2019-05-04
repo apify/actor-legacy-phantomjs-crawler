@@ -13,14 +13,14 @@ which provides similar functionality, but is based on the modern headless Chrome
 
 Apify Crawler used to be a core product of Apify, but in April 2019 it was deprecated in favor of the more general
 [Apify Actors](https://apify.com/actors) product.
-This actor serves as a replacement of the legacy product and provides an equivalent interface and functionality,
+This actor serves as a replacement of the legacy product and provides equivalent interface and functionality,
 in order to enable users to seamlessly migrate their crawlers.
 Note that there are several differences between this actor and legacy Apify Crawler:
 
 - The **Cookies persistence** setting of **Over all crawler runs**
   is only supported when running the actor as a [task](https://apify.com/docs/tasks).
   When you run the actor directly and use this setting,
-  the actor will fail and print an error to log.
+  the actor will fail and print an error to the log.
 - In **Page function**, the `context` object passed to the function has slightly different properties:
   - The `stats` object contains only a subset of the original statistics. [See details](#context-stats)
   - The `actExecutionId` and `actId` properties are not defined and were replaced by `actorRunId` and `actorTaskId`, respectively.
@@ -29,7 +29,7 @@ Note that there are several differences between this actor and legacy Apify Craw
   If you pass these fields when calling the actor, you will receive an error.
 - The actor supports legacy **proxy settings** fields `proxyType`, `proxyGroups` and `customProxies`,
   but their values are not checked. If these settings are invalid,
-  the actor will start normally and might crawl the pages with invalid proxy settings,
+  the actor will start normally and might crawl pages with invalid proxy settings,
   most likely producing invalid results.
   It is recommended to use the new **Proxy configuration** (`proxyConfiguration`)
   field instead, which is correctly validated before the actor is started.   
@@ -41,8 +41,8 @@ For more details on how to migrate your crawlers to this actor, please see our b
 
 ## Overview
 
-This actor provides a web crawler for developers that enables scraping data from
-any website using the primary programming language of the web: JavaScript.
+This actor provides a web crawler for developers that enables the scraping of data from
+any website using the primary programming language of the web, JavaScript.
 
 In order to extract structured data from a website, you only need two things. First, tell the crawler which pages it
 should visit (see <a href="#start-urls">Start URLs</a> and <a href="#pseudo-urls">Pseudo-URLs</a>) and second, define
@@ -84,7 +84,7 @@ These settings are described in detail in the following sections.
         class="img-responsive"/></a>
 </center>
 
-Note that each crawler configuration setting can also be set using the API, the corresponding property names and types are
+Note that each crawler configuration setting can also be set using the API. The corresponding property names and types are
 described in the [Input schema](https://apify.com/apify/web-scraper?section=input-schema) section.
 
 ## Start URLs
@@ -168,7 +168,7 @@ a:not([rel=nofollow]), input, button, [onclick]:not([rel=nofollow])
 
 Be careful - clicking certain DOM elements can cause
 <b>unexpected and potentially harmful side effects</b>.
-For example, by clicking buttons you might submit forms, flag comments, etc.
+For example, by clicking buttons, you might submit forms, flag comments, etc.
 In principle, the safest option is to narrow the CSS selector to as few elements as possible,
 which also makes the crawler run much faster.
 
@@ -315,7 +315,7 @@ which is an object with the following properties and functions:
     </tr>
     <tr>
         <td id="context-saveCookies"><code>saveCookies([cookies]) </code></td>
-        <td>Saves current cookies of the current PhantomJS browser to the actor task's
+        <td>Saves the current cookies of the current PhantomJS browser to the actor task's
         <a href="#cookies">Initial cookies</a> setting.
         All subsequently started PhantomJS processes will use these cookies.
         For example, this is useful for storing a login.

@@ -53,7 +53,7 @@
       "title": "Page function",
       "type": "string",
       "nullable": true,
-      "description": "JavaScript function that is executed on every crawled page, use it to extract data from it. Note that only ES5.1 syntax is supported.",
+      "description": "JavaScript function that is executed on every crawled page, use it to extract data. Note that only ES5.1 syntax is supported.",
       "prefill": "function pageFunction(context) {\n    // called on every page the crawler visits, use it to extract data from it\n    var $ = context.jQuery;\n    var result = {\n        title: $('title').text(),\n        myValue: $('TODO').text()\n    };\n    return result;\n}\n",
       "editor": "javascript"
     },
@@ -71,7 +71,7 @@
       "title": "URL #fragments identify unique pages",
       "type": "boolean",
       "nullable": true,
-      "description": "Indicates that the URL fragment identifier (i.e. <code>http://example.com/page#<b>this-guy-here</b></code>) should be considered when matching an URL against a Pseudo-URL or when checking whether a page has already been visited. Typically, URL fragments are used as internal page anchors and therefore they should be ignored because they don't represent separate pages. However, many AJAX-based website nowadays use URL fragment to represent page parameters; in such cases, this option should be enabled.",
+      "description": "Indicates that the URL fragment identifier (i.e. <code>http://example.com/page#<b>this-guy-here</b></code>) should be considered when matching a URL against a Pseudo-URL or when checking whether a page has already been visited. Typically, URL fragments are used as internal page anchors and therefore they should be ignored because they don't represent separate pages. However, many AJAX-based website nowadays use URL fragment to represent page parameters; in such cases, this option should be enabled.",
       "default": false,
       "groupCaption": "Options",
       "groupDescription": "Various crawler settings"
@@ -97,7 +97,7 @@
       "title": "Inject jQuery",
       "type": "boolean",
       "nullable": true,
-      "description": "Indicates that the <a href='http://jquery.com' target='_blank' rel='noopener'>jQuery</a> library should be injected to each page before <b>Page function</b> is invoked. Note that the jQuery object will not be registered into global namespace in order to avoid conflicts with libraries used by the web page. It can only be accessed through <code>context.jQuery</code>.",
+      "description": "Indicates that the <a href='http://jquery.com' target='_blank' rel='noopener'>jQuery</a> library should be injected into each page before <b>Page function</b> is invoked. Note that the jQuery object will not be registered into global namespace in order to avoid conflicts with libraries used by the web page. It can only be accessed through <code>context.jQuery</code>.",
       "default": true
     },
 
@@ -105,7 +105,7 @@
       "title": "Inject Underscore.js",
       "type": "boolean",
       "nullable": true,
-      "description": "Indicates that the <a href='http://underscorejs.org' target='_blank' rel='noopener'>Underscore.js</a> library should be injected to each page before <b>Page function</b> is invoked. Note that the Underscore object will not be registered into global namespace in order to avoid conflicts with libraries used by the web page. It can only be accessed through <code>context.underscoreJs</code>.",
+      "description": "Indicates that the <a href='http://underscorejs.org' target='_blank' rel='noopener'>Underscore.js</a> library should be injected into each page before <b>Page function</b> is invoked. Note that the Underscore object will not be registered into global namespace in order to avoid conflicts with libraries used by the web page. It can only be accessed through <code>context.underscoreJs</code>.",
       "default": false
     },
 
@@ -145,7 +145,7 @@
       "title": "Rotate User-Agent headers",
       "type": "boolean",
       "nullable": true,
-      "description": "If checked then the crawler automatically rotates the <code>User-Agent</code> HTTP header for each new IP address, from a pre-defined list. This settings overwrites <code>User-Agent</code> set in <b>Custom HTTP headers</b>.",
+      "description": "If checked, the crawler automatically rotates the <code>User-Agent</code> HTTP header for each new IP address, from a pre-defined list. This settings overwrites <code>User-Agent</code> set in <b>Custom HTTP headers</b>.",
       "default": false
     },
 
@@ -184,7 +184,7 @@
       "type": "integer",
       "nullable": true,
       "editor": "hidden",
-      "description": "This field was deprecated. To set the execution timeout, use the actor run timeout option instead.",
+      "description": "This field has been deprecated. To set the execution timeout, use the actor run timeout option instead.",
       "minimum": 1,
       "maximum": 1814400,
       "default": 604800,
@@ -260,7 +260,7 @@
       "title": "Max parallel processes",
       "type": "integer",
       "nullable": true,
-      "description": "The maximum number of parallel processes that will perform the crawl. The actual number might be lower if the actor runs with not enough memory. Note that each parallel process uses a different proxy (if enabled).",
+      "description": "The maximum number of parallel processes that will perform the crawl. The actual number might be lower if the actor runs without enough memory. Note that each parallel process uses a different proxy (if enabled).",
       "minimum": 1,
       "maximum": 100,
       "default": 50
@@ -280,7 +280,7 @@
       "title": "Custom HTTP headers",
       "type": "array",
       "nullable": true,
-      "description": "Custom HTTP headers set by the crawler to all requests. It's an array of objects, where each object has the <code>key</code> and <code>value</code> properties.",
+      "description": "Custom HTTP headers set by the crawler to all requests. It is an array of objects, where each object has the <code>key</code> and <code>value</code> properties.",
       "editor": "keyValue",
       "placeholderKey": "Name",
       "placeholderValue": "Value"
@@ -306,7 +306,7 @@
       "title": "Proxy groups (legacy)",
       "type": "array",
       "nullable": true,
-      "description": "Specifies Apify Proxy groups to be used when <b>proxyType</b> is <code>SELECTED_PROXY_GROUPS</code>.<br><br>This is a legacy option only kept for backwards compatibility, use <b>proxyConfiguration</b> instead!",
+      "description": "Specifies Apify Proxy groups to be used when <b>proxyType</b> is <code>SELECTED_PROXY_GROUPS</code>.<br><br>This is a legacy option only kept for backwards compatibility - use <b>proxyConfiguration</b> instead!",
       "editor": "hidden",
       "default": []
     },
@@ -315,7 +315,7 @@
       "title": "Custom proxies (legacy)",
       "type": "string",
       "nullable": true,
-      "description": "Specifies Apify Proxy groups to be used when <b>proxyType</b> is <code>CUSTOM</code>. Each proxy should be specified in the <code>scheme://user:password@host:port</code> format, multiple proxies should be separated by a space or new line. <br><br>This is a legacy option only kept for backwards compatibility, use <b>proxyConfiguration</b> instead!",
+      "description": "Specifies Apify Proxy groups to be used when <b>proxyType</b> is <code>CUSTOM</code>. Each proxy should be specified in the <code>scheme://user:password@host:port</code> format, multiple proxies should be separated by a space or new line. <br><br>This is a legacy option only kept for backwards compatibility - use <b>proxyConfiguration</b> instead!",
       "editor": "hidden"
     },
 
@@ -331,7 +331,7 @@
       "title": "Initial cookies",
       "type": "array",
       "nullable": true,
-      "description": "JSON array with cookies that the crawler starts with. This is useful for reusing login state from an external web browser.",
+      "description": "JSON array with cookies that the crawler starts with. This is useful for reusing a login state from an external web browser.",
       "editor": "json"
     },
 
@@ -351,7 +351,7 @@
       "type": "string",
       "nullable": true,
       "maxLength": 1000,
-      "description": "A HTTP endpoint that receives a POST request right after every run of this actor finishes. The POST payload is a JSON object that has the following structure: <code>{ taskId: String, runId: String, data: String }</code>.<br><br>Note that this field is kept just for backwards compatibility and it uses the <a href='https://apify.com/docs/webhooks'>Apify Webhooks</a> infrastructure.",
+      "description": "An HTTP endpoint that receives a POST request right after every run of this actor finishes. The POST payload is a JSON object that has the following structure: <code>{ taskId: String, runId: String, data: String }</code>.<br><br>Note that this field is only kept for backwards compatibility and it uses the <a href='https://apify.com/docs/webhooks'>Apify Webhooks</a> infrastructure.",
       "editor": "textfield"
     },
 

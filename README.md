@@ -1,17 +1,17 @@
 # Legacy PhantomJS Crawler
 
 This actor implements the legacy Apify Crawler product.
-It uses [PhantomJS](http://phantomjs.org/) headless browser to recursively
-crawl websites and extract data from them using a front-end JavaScript code.
-Note that PhantomJS is no longer developed by the community
-and it might be easily detected and blocked by target websites.
-Therefore, for new projects, we recommend to use the
+It uses the [PhantomJS](http://phantomjs.org/) headless browser to recursively
+crawl websites and extract data from them using front-end JavaScript code.
+Note that PhantomJS is no longer being developed by the community
+and might be easily detected and blocked by target websites.
+Therefore, for new projects, we recommend that you use the
 [`apify/web-scraper`](https://apify.com/apify/web-scraper) actor,
 which provides similar functionality, but is based on the modern headless Chrome browser.
 
 ## Compatibility with legacy Apify Crawler
 
-Apify Crawler used to be a core product of Apify, but in April 2019 it has been deprecated in favor of the more general
+Apify Crawler used to be a core product of Apify, but in April 2019 it was deprecated in favor of the more general
 [Apify Actors](https://apify.com/actors) product.
 This actor serves as a replacement of the legacy product and provides an equivalent interface and functionality,
 in order to enable users to seamlessly migrate their crawlers.
@@ -21,11 +21,11 @@ Note that there are several differences between this actor and legacy Apify Craw
   is only supported when running the actor as a [task](https://apify.com/docs/tasks).
   When you run the actor directly and use this setting,
   the actor will fail and print an error to log.
-- In **Page function**, the `context` object passed to the function has a slightly different properties:
-  - `stats` object contains only a subset of the original statistics. [See details](#context-stats)
-  - `actExecutionId` and `actId` properties are not defined and were replaced by `actorRunId` and `actorTaskId`, respectively.
+- In **Page function**, the `context` object passed to the function has slightly different properties:
+  - The `stats` object contains only a subset of the original statistics. [See details](#context-stats)
+  - The `actExecutionId` and `actId` properties are not defined and were replaced by `actorRunId` and `actorTaskId`, respectively.
 - The **Finish webhook URL** and **Finish webhook data** settings
-  are no longer supported, please use the [webhooks](https://apify.com/docs/webhooks) for actors instead.
+  are no longer supported - please use [webhooks](https://apify.com/docs/webhooks) for actors instead.
   If you pass these fields when calling the actor, you will receive an error.
 - The actor supports legacy **proxy settings** fields `proxyType`, `proxyGroups` and `customProxies`,
   but their values are not checked. If these settings are invalid,
@@ -36,7 +36,7 @@ Note that there are several differences between this actor and legacy Apify Craw
 - The **Test URL** feature is not supported.
   
 <!-- TODO:
-For more details how to migrate your crawlers to this actor, please see our blog post.
+For more details on how to migrate your crawlers to this actor, please see our blog post.
 -->
 
 ## Overview
@@ -61,12 +61,12 @@ After that, Bob closes the current tab, goes to the next tab and repeats the sam
 Bob is pretty smart and skips pages that he has already visited.
 When there are no more pages, he is done. And this is where the magic happens.
 Bob would need about a month to click through a few hundred pages.
-Apify can do it in a few seconds and makes fewer mistakes.
+Apify can do it in a few seconds and makes fewer mistakes than Bob.
 
 More formally, the crawler repeats the following steps:
 
 <ol>
-    <li>Add each of the <a href="#start-urls">Start URLs</a> into the crawling queue.</li>
+    <li>Add each of the <a href="#start-urls">Start URLs</a> to the crawling queue.</li>
     <li>Fetch the first URL from the queue and load it in the virtual browser.</li>
     <li>Execute <a href="#page-function">Page function</a> on the loaded page and save its results.</li>
     <li>Find all links from the page using <a href="#clickable-elements">Clickable elements</a> CSS selector.
@@ -186,7 +186,7 @@ Page function is typically used to extract some data from the page, but it can a
 to perform some non-trivial
 operation on the page, e.g. handle AJAX-based pagination.
 
-<b>IMPORTANT:</b> This actor is using <a href="http://phantomjs.org/" target="_blank" rel="noopener">PhantomJS</a>
+<b>IMPORTANT:</b> This actor uses the <a href="http://phantomjs.org/" target="_blank" rel="noopener">PhantomJS</a>
 headless web browser, which only supports JavaScript ES5.1 standard
 (read more in a <a href="https://ariya.io/2014/08/phantomjs-2-and-javascript-goodies" target="_blank" rel="noopener">blog post about PhantomJS 2.0</a>).
 
@@ -199,7 +199,7 @@ function pageFunction(context) {
 ```
 
 The function can return an arbitrary JavaScript object (including array, string, number, etc.) that can be stringified to JSON;
-this value will be saved in the crawling results as the <code>pageFunctionResult</code>
+this value will be saved in the crawling results, as the <code>pageFunctionResult</code>
 field of the <a href="#request-object">Request object</a> corresponding to the web page
 on which the <code>pageFunction</code> was executed.
 The crawling results are stored in the default [dataset](https://apify.com/docs/storage#dataset)
@@ -318,7 +318,7 @@ which is an object with the following properties and functions:
         <td>Saves current cookies of the current PhantomJS browser to the actor task's
         <a href="#cookies">Initial cookies</a> setting.
         All subsequently started PhantomJS processes will use these cookies.
-        For example, this is useful to store a login.
+        For example, this is useful for storing a login.
         Optionally, you can pass an array of cookies to set to the browser before saving (in
         <a href="http://phantomjs.org/api/phantom/property/cookies.html" target="_blank" rel="noopener">PhantomJS format</a>).
         Note that by passing an empty array you can unset all cookies.
@@ -354,13 +354,12 @@ which is an object with the following properties and functions:
 </table>
 
 Note that any changes made to the <code>context</code> parameter will be ignored.
-When implementing the page function, it is the user's responsibility not to break normal
-page's
-scripts which might affect the operation of the crawler.
+When implementing the page function, it is the user's responsibility to not break normal
+page scripts that might affect the operation of the crawler.
 
 ### Waiting for dynamic content
 
-Some web pages do not load all their content immediately but only fetch it in the background
+Some web pages do not load all their content immediately, but only fetch it in the background
 using AJAX,
 while <code>pageFunction</code> might be executed before the content has actually been
 loaded.

@@ -3,6 +3,7 @@
 This actor implements the legacy Apify Crawler product.
 It uses the [PhantomJS](http://phantomjs.org/) headless browser to recursively
 crawl websites and extract data from them using front-end JavaScript code.
+
 Note that PhantomJS is no longer being developed by the community
 and might be easily detected and blocked by target websites.
 Therefore, for new projects, we recommend that you use the

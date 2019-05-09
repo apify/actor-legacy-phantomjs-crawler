@@ -764,14 +764,14 @@ endpoint in API reference.
 
 ## Request object
 
-This object contains all the available information about every single web page the crawler
-encounters
+The `Request` object contains all the available information about
+every single web page the crawler encounters
 (both visited and not visited). This object comes into play
 in both <a href="#page-function">Page function</a>
-and <a href="#intercept-request-function">Intercept request function</a>
+and <a href="#intercept-request-function">Intercept request function</a>,
 and crawling results are actually just an array of these objects.
 
-The Request object has the following schema:
+The object has the following schema:
 
 ```javascript
 {

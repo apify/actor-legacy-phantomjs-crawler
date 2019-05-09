@@ -771,7 +771,7 @@ in both <a href="#page-function">Page function</a>
 and <a href="#intercept-request-function">Intercept request function</a>,
 and crawling results are actually just an array of these objects.
 
-The object has the following schema:
+The object has the following structure:
 
 ```javascript
 {

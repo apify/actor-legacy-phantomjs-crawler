@@ -34,8 +34,13 @@ Note that there are several differences between this actor and legacy Apify Craw
   the actor will start normally and might crawl pages with invalid proxy settings,
   most likely producing invalid results.
   It is recommended to use the new **Proxy configuration** (`proxyConfiguration`)
-  field instead, which is correctly validated before the actor is started.   
+  field instead, which is correctly validated before the actor is started.
 - The **Test URL** feature is not supported.
+- The crawling results are stored into an Apify dataset instead of the specialized
+  storage for crawling results used by the old Crawler.
+  The dataset supports most of the legacy API query parameters
+  in order to emulate the same results format. However, there might be some small
+  incompatibilities. For details, see [Crawling results](#crawling-results).
   
 <!-- TODO:
 For more details on how to migrate your crawlers to this actor, please see our blog post.
@@ -733,6 +738,10 @@ The response looks as follows:
 ]
 ```
 
+Note that in the full results of the legacy Crawler product results, each `Request`
+object contained a field called `errorInfo`, even if it was empty.
+In the dataset, this field is skipped if it's empty.
+
 To download the data in simplified format known in the legacy Apify Crawler
 product, add the `simplified=1` query parameter:
 
@@ -744,22 +753,28 @@ The response will look like this:
 
 ```javascript
 [{
-  "url": "https://www.example.com/",
-  "errorInfo": "",
+  "url": "https://www.example.com/iphone-x",
   "product": "iPhone X",
   "price": 699
 },
 {
-  "url": "https://www.example.com/",
-  "errorInfo": "",
+  "url": "https://www.example.com/samsung-galaxy",
   "product": "Samsung Galaxy",
   "price": 499
-}]
+},
+{
+  "url": "https://www.example.com/nokia",
+  "errorInfo": "The page was not found",
+}
+]
 ```
 
 To get the results in other formats, set `format` query parameter to `xml`, `xlsx`, `csv`, `html`, etc.
 For full details, see the [Get dataset items](https://apify.com/docs/api/v2#/reference/datasets/item-collection)
 endpoint in API reference.
+
+To skip the records containing the `errorInfo` field from the results,
+add the `skipFailedPages=1` query parameter. This will ensure the results have a fixed structure, which is especially useful for tabular formats such as CSV or Excel.
 
 
 ## Request object

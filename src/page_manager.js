@@ -276,7 +276,14 @@ class PageManager {
             // Save results before calling markRequestHandled(), otherwise the result might be lost on crash.
             // However, this also means that results might be duplicated.
             if (!skipOutput) {
-                await this.dataset.pushData(request);
+                // NOTE: The old execution results API endpoint (with simplified format) was only including
+                // "errorInfo" if it was non-empty in the specific crawler execution.
+                // In order to emulate this (bad) behavior in the Dataset items API endpoint,
+                // we need to remove empty "errorInfo" here completely.
+                const requestToPush = request.errorInfo === '' || request.errorInfo === null
+                    ? _.omit(request, 'errorInfo')
+                    : request;
+                await this.dataset.pushData(requestToPush);
             }
 
             const requestRaw = requestLegacyToRaw(request);

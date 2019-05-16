@@ -23,6 +23,13 @@ Apify.main(async () => {
                 'ACTOR.RUN.ABORTED',
                 'ACTOR.RUN.TIMED_OUT',
             ],
+            idempotencyKey: `finish-webhook-${process.env.APIFY_ACTOR_RUN_ID}`,
+            // Note that ACTOR_TASK_ID might be empty when run from actor not task.
+            payloadTemplate: `{
+    "taskId": ${JSON.stringify(process.env.ACTOR_TASK_ID || null)},
+    "runId": "${process.env.ACTOR_RUN_ID}",
+    "data": input.finishWebhookData || null
+}`,
         });
     }
 

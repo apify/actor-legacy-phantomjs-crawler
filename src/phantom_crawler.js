@@ -773,12 +773,19 @@ class PhantomCrawler {
 
                 // Save cookies to actor task
                 if (this.input.cookiesPersistence === COOKIES_PERSISTENCE.OVER_CRAWLER_RUNS) {
-                    await Apify.client.tasks.updateTask({
-                        taskId: process.env.APIFY_ACTOR_TASK_ID,
-                        task: {
-                            cookies,
-                        },
-                    });
+                    const taskId = process.env.APIFY_ACTOR_TASK_ID;
+                    // This happens locally.
+                    if (!taskId) return log.warning('APIFY_ACTOR_TASK_ID is not available, skipping cookies synchronization');
+
+                    try {
+                        const { input } = await Apify.client.tasks.getTask({ taskId });
+                        const parsedInputBody = JSON.parse(input.body);
+                        parsedInputBody.cookies = cookies;
+                        input.body = JSON.stringify(parsedInputBody, null, 2);
+                        await Apify.client.tasks.updateTask({ taskId, task: { input } });
+                    } catch (err) {
+                        return log.exception(err, 'Cannot synchronize cookies between the runs');
+                    }
                 }
 
                 // Save cookies to state, so they are reused on actor run migration

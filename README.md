@@ -26,9 +26,6 @@ Note that there are several differences between this actor and legacy Apify Craw
   - The `stats` object contains only a subset of the original statistics.
   See `context` details in [Page function](#page-function) section.
   - The `actExecutionId` and `actId` properties are not defined and were replaced by `actorRunId` and `actorTaskId`, respectively.
-- The **Finish webhook URL** and **Finish webhook data** settings
-  are no longer supported - please use [webhooks](https://apify.com/docs/webhooks) for actors instead.
-  If you pass these fields when calling the actor, you will receive an error.
 - The actor supports legacy **proxy settings** fields `proxyType`, `proxyGroups` and `customProxies`,
   but their values are not checked. If these settings are invalid,
   the actor will start normally and might crawl pages with invalid proxy settings,
@@ -41,7 +38,7 @@ Note that there are several differences between this actor and legacy Apify Craw
   The dataset supports most of the legacy API query parameters
   in order to emulate the same results format. However, there might be some small
   incompatibilities. For details, see [Crawling results](#crawling-results).
-  
+
 <!-- TODO:
 For more details on how to migrate your crawlers to this actor, please see our blog post.
 -->
@@ -608,7 +605,7 @@ It accepts a JSON object with the following structure:
 ## Cookies
 
 The **Initial cookies** (`cookies`) option enables you to specify
-a JSON array with cookies that will be used by the crawler on start. 
+a JSON array with cookies that will be used by the crawler on start.
 You can export the cookies from your own web browser,
 for example using the <a href="http://www.editthiscookie.com/" target="_blank" rel="noopener">EditThisCookie</a> plugin.
 This setting is typically used to start crawling when logged in to certain websites.

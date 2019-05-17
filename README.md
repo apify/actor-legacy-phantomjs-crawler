@@ -26,6 +26,9 @@ Note that there are several differences between this actor and legacy Apify Craw
   - The `stats` object contains only a subset of the original statistics.
   See `context` details in [Page function](#page-function) section.
   - The `actExecutionId` and `actId` properties are not defined and were replaced by `actorRunId` and `actorTaskId`, respectively.
+- The **Finish webhook URL** and **Finish webhook data** fields are still supported.
+  However, the POST payload passed to the webhook has a different format.
+  See [Finish webhook](#finish-webhook) below for details.
 - The actor supports legacy **proxy settings** fields `proxyType`, `proxyGroups` and `customProxies`,
   but their values are not checked. If these settings are invalid,
   the actor will start normally and might crawl pages with invalid proxy settings,
@@ -601,6 +604,42 @@ It accepts a JSON object with the following structure:
     "proxyUrls": String[],
 }
 ```
+
+## Finish webhook
+
+The **Finish webhook URL** (`finishWebhookUrl`)
+field specifies a custom HTTP endpoint that receives a notification after a run of the actor ends,
+regardless of its status, i.e. whether it finished, failed, was aborted, etc.
+You can specify a custom string that will be sent with the webhook
+using the **Finish webhook data** (`finishWebhookData`),
+in order to help you identify the actor run.
+
+The provided endpoint is sent a HTTP POST request with `Content-Type: application/json; charset=utf-8` header,
+and its payload contains a JSON object with the following structure:
+
+```
+{
+    "actorId": String,   // ID of the actor
+    "runId": String,     // ID of the actor run
+    "taskId": String,    // ID of the actor task. It might be null if the actor is started directly without a task.
+    "datasetId": String, // ID of the dataset with the crawling results
+    "data": String       // Custom data provided in "finishWebhookData" field
+}
+```
+
+You can use the `actorId` and `runId` fields to query the actor run status using 
+the [Get run](https://apify.com/docs/api/v2#/reference/actors/run-object/get-run) API endpoint.
+The `datasetId` field can be used to download the crawling results
+using the [Get dataset items](https://apify.com/docs/api/v2#/reference/datasets/item-collection/get-items)
+API endpoint - see [Crawling results](#crawling-results) below for more details.
+
+Note that the **Finish webhook URL** and **Finish webhook data** are provided merely for backwards compatibility 
+with the legacy Apify Crawler product, and the calls are performed using the Apify platform's standard webhook facility.
+For details, see [Webhooks](https://apify.com/docs/webhooks) in documentation.
+
+To test your webhook endpoint, please create a new empty task for this actor,
+set the **Finish webhook URL** and run the task.
+
 
 ## Cookies
 

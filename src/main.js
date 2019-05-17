@@ -13,8 +13,6 @@ Apify.main(async () => {
 
     // Set up finish webhook
     if (input.finishWebhookUrl) {
-        // TODO: Finish this, add custom data
-        throw new Error('The "finishWebhookUrl" is not yet fully supported, please use Actor Webhooks instead.');
         await Apify.addWebhook({
             requestUrl: input.finishWebhookUrl,
             eventTypes: [
@@ -23,12 +21,18 @@ Apify.main(async () => {
                 'ACTOR.RUN.ABORTED',
                 'ACTOR.RUN.TIMED_OUT',
             ],
+
+            // This is to ensure that on actor restart, the webhook will not be added again
             idempotencyKey: `finish-webhook-${process.env.APIFY_ACTOR_RUN_ID}`,
-            // Note that ACTOR_TASK_ID might be empty when run from actor not task.
+
+            // Note that ACTOR_TASK_ID might be undefined if not running in an actor task,
+            // other fields can undefined when running this locally
             payloadTemplate: `{
+    "actorId": ${JSON.stringify(process.env.ACTOR_ID || null)},
     "taskId": ${JSON.stringify(process.env.ACTOR_TASK_ID || null)},
-    "runId": "${process.env.ACTOR_RUN_ID}",
-    "data": input.finishWebhookData || null
+    "runId": ${JSON.stringify(process.env.ACTOR_RUN_ID || null)},
+    "datasetId": ${JSON.stringify(process.env.APIFY_DEFAULT_DATASET_ID || null)},
+    "data": ${JSON.stringify(input.finishWebhookData || null)}
 }`,
         });
     }

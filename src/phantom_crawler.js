@@ -386,13 +386,14 @@ class PhantomCrawler {
         });
 
         // Save cookies to actor task if requested
+        let cookies;
         if (this.input.cookiesPersistence === COOKIES_PERSISTENCE.OVER_CRAWLER_RUNS) {
             try {
                 const data = readFilePromised(this.cookiesPath, 'utf8');
                 if (data.length > MAX_COOKIES_JSON_LENGTH) {
                     throw new Error(`The "cookies.json" file is too large (was: ${data.length}, limit: ${MAX_COOKIES_JSON_LENGTH})`);
                 }
-                const cookies = JSON.parse(data);
+                cookies = JSON.parse(data);
                 if (!_.isArray(cookies)) {
                     throw new Error('The "cookies.json" file doesn\'t contain a JSON array');
                 }

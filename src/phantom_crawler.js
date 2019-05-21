@@ -390,7 +390,7 @@ class PhantomCrawler {
         let cookies;
         if (this.input.cookiesPersistence === COOKIES_PERSISTENCE.OVER_CRAWLER_RUNS) {
             try {
-                fileData = readFilePromised(this.cookiesPath, 'utf8');
+                fileData = await readFilePromised(this.cookiesPath, 'utf8');
                 if (fileData.length > MAX_COOKIES_JSON_LENGTH) {
                     throw new Error(`The "cookies.json" file is too large (was: ${data.length}, limit: ${MAX_COOKIES_JSON_LENGTH})`);
                 }
@@ -398,13 +398,14 @@ class PhantomCrawler {
                 if (!_.isArray(cookies)) {
                     throw new Error('The "cookies.json" file doesn\'t contain a JSON array');
                 }
+                log.info('Saving cookies from crawler to actor task to support OVER_CRAWLER_RUNS cookie persistence', { actorTaskId: this.actorTaskId, cookiesCount: cookies.length });
                 await this._saveCookiesToActorTask(cookies);
             } catch (e) {
                 // The cookies.json file might not exist at all
                 if (e.code === 'ENOENT') {
                     log.info('Crawl left no "cookies.json" file, saved cookies will be empty');
                 } else {
-                    log.exception(e, 'Failed to read "cookies.json" file or save cookies to task', { actorTaskId: this.actorTaskId, cookiesCount: cookies ? cookies.length : null, fileData });
+                    log.exception(e, 'Failed to read "cookies.json" file or save cookies to task', { actorTaskId: this.actorTaskId, cookiesCount: cookies ? cookies.length : null });
                 }
             }
         }
@@ -783,6 +784,7 @@ class PhantomCrawler {
 
                     // Save cookies to actor task
                     if (this.input.cookiesPersistence === COOKIES_PERSISTENCE.OVER_CRAWLER_RUNS) {
+                        log.info('Saving cookies from page function to actor task to support OVER_CRAWLER_RUNS cookie persistence.', { actorTaskId: this.actorTaskId, cookiesCount: cookies.length });
                         promises.push(this._saveCookiesToActorTask(cookies));
                     }
 
@@ -861,8 +863,6 @@ class PhantomCrawler {
     }
 
     async _saveCookiesToActorTask(cookies) {
-        log.debug('Updating cookies in actor task to support OVER_CRAWLER_RUNS cookie persistence', { actorTaskId: this.actorTaskId, cookiesCount: cookies.length });
-
         // TODO: Unfortunately, this operation is not atomic, so it might happen that changes in task input configuration
         // saved between the get and update operations will be lost. Without better API, we can't do anything about it...
         const { input } = await Apify.client.tasks.getTask({ taskId: this.actorTaskId });

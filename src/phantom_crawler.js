@@ -341,7 +341,7 @@ class PhantomCrawler {
                         await writeFilePromised(this.configPath, JSON.stringify(config, null, 2));
                     })(),
                     (async () => {
-                        // Generate cookies.json file, either from persistent cookies (after migration or actor restart), or from input
+                        // Generate cookies.json file, either from persisted cookies (after migration or actor restart), or from input
                         const cookies = this.persistedCookies || this.input.cookies;
                         if (cookies) {
                             log.debug('Loading cookies', { cookiesCount: cookies.length });
@@ -765,7 +765,7 @@ class PhantomCrawler {
 
                 log.info('Overriding cookies', { cookiesCount: cookies.length });
 
-                // TODO: These operations can be done in parallel
+                // TODO: Some of these operations can be done in parallel
 
                 // Update cookie file (using rename to be atomic).
                 await writeFilePromised(tmpFile, cookiesJson);
@@ -774,8 +774,14 @@ class PhantomCrawler {
                 // Save cookies to actor task
                 if (this.input.cookiesPersistence === COOKIES_PERSISTENCE.OVER_CRAWLER_RUNS) {
                     const taskId = process.env.APIFY_ACTOR_TASK_ID;
-                    // This happens locally.
-                    if (!taskId) return log.warning('APIFY_ACTOR_TASK_ID is not available, skipping cookies synchronization');
+
+                    // This happens locally or if run outside of actor task!
+                    if (!taskId) {
+                        log.warning('APIFY_ACTOR_TASK_ID environment variable is not set, skipping cookies synchronization');
+                        return;
+                    }
+
+                    log.debug('Updating cookies in actor task to support OVER_CRAWLER_RUNS cookie persistence', { actorTaskId: taskId, cookiesCount: cookies.length });
 
                     try {
                         const { input } = await Apify.client.tasks.getTask({ taskId });
@@ -784,7 +790,8 @@ class PhantomCrawler {
                         input.body = JSON.stringify(parsedInputBody, null, 2);
                         await Apify.client.tasks.updateTask({ taskId, task: { input } });
                     } catch (err) {
-                        return log.exception(err, 'Cannot synchronize cookies between the runs');
+                        log.exception(err, 'Failed to save cookies to actor task', { actorTaskId: taskId, cookiesCount: cookies.length });
+                        return;
                     }
                 }
 

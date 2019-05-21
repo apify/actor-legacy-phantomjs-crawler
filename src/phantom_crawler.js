@@ -67,6 +67,9 @@ const COOKIES_PERSISTENCE = {
     OVER_CRAWLER_RUNS: 'OVER_CRAWLER_RUNS',
 };
 
+// Should be value between 0 and 1000
+const PHANTOMJS_OOM_SCORE_ADJ = 100;
+
 const writeFilePromised = util.promisify(fs.writeFile);
 const renamePromised = util.promisify(fs.rename);
 
@@ -146,12 +149,11 @@ class PhantomCrawler {
         this.dataset = dataset;
         this.isRunning = false;
         this.pageManager = new PageManager(this);
-
         this.proxyConfiguration = this.input.proxyConfiguration;
 
-        if (this.input.cookiesPersistence === COOKIES_PERSISTENCE.OVER_CRAWLER_RUNS
-            && !process.env.APIFY_ACTOR_TASK_ID) {
-            throw new Error('The "cookiesPersistence" setting of "OVER_CRAWLER_RUNS" can only be used when actor is run via an actor task.');
+        this.actorTaskId = process.env.APIFY_ACTOR_TASK_ID || null;
+        if (this.input.cookiesPersistence === COOKIES_PERSISTENCE.OVER_CRAWLER_RUNS && !this.actorTaskId) {
+            throw new Error('The "cookiesPersistence" setting of "OVER_CRAWLER_RUNS" can only be used when actor is run via an actor task (the APIFY_ACTOR_TASK_ID environment variable must be defined).');
         }
 
         // WORKAROUND: On 2016-08-19 we changed semantics of "clickableElementsSelector" field.
@@ -496,13 +498,10 @@ class PhantomCrawler {
 
             // Adjust the OOM killer score for PhantomJS processes, so they are the first ones
             // to get killed when the system is running out of memory
-            // const score = this.workerServer.config.adjustPhantomOomScore;
-            // if (score) {
-            //    // TODO: this fails with EACCESS !!!!
-            //    fs.writeFile(`/proc/${slave.pid}/oom_score_adj`, `${score}`, (err) => {
-            //        if (err) log.exception(err, 'Failed to adjust OOM killer score');
-            //    });
-            // }
+            fs.writeFile(`/proc/${slave.pid}/oom_score_adj`, PHANTOMJS_OOM_SCORE_ADJ, (err) => {
+                if (err) log.debug('Failed to adjust OOM killer score for PhantomJS process', { errMsg: err.message });
+            });
+
         } catch (e) {
             this.fatalError(e);
         }
@@ -580,9 +579,231 @@ class PhantomCrawler {
         const responseMessage = {};
         let request; // this is the Request object from crawler, not HTTP request from Node.js!
 
-        const softFail = (msg) => {
-            log.softFail('Server failed to handle a request from slave', {
-                msg,
+        try {
+            // Check the piggybacked requests and store them to requestManager
+            if (message.piggybackBufferedRequests) {
+                if (!_.isArray(message.piggybackBufferedRequests)) {
+                    throw "The 'piggybackBufferedRequests' field must be an array.";
+                }
+                const requestsToAdd = [];
+                for (let i = 0; i < message.piggybackBufferedRequests.length; i++) {
+                    request = message.piggybackBufferedRequests[i];
+                    fixLegacyRequestDates(request);
+                    log.debug('Add new request', { request });
+
+                    if (!request) {
+                        throw `Some request in 'piggybackBufferedRequests' array is undefined (index: ${i}).`;
+                    }
+                    if (!utils.isNullOrUndefined(request.id)) {
+                        throw `Some request in 'piggybackBufferedRequests' defines 'id' property; that is an error (index: ${i}, id: '${request.id}').`;
+                    }
+                    if (!utils.isNullOrUndefined(request.referrer)) {
+                        throw `Some request in 'piggybackBufferedRequests' defines 'referrer' property; that is an error (index: ${i}, referrer.id: ${request.referrer.id}).`;
+                    }
+
+                    // if the slave is still bootstrapping...
+                    if (slave.isBootstrapper && !this.isBootstrapFinished) {
+                        // ...then the request must be one of the bootstrap requests without any referrer
+                        if (slave.lastFetchedRequest) {
+                            throw 'Internal error (code 1)';
+                        }
+                        if (!utils.isNullOrUndefined(request.referrerId)) {
+                            throw `Some request in 'piggybackBufferedRequests' from bootsrapper defines referrerId (index: ${i}, referrerId: '${request.referrerId}').`;
+                        }
+                    } else {
+                        // ...otherwise the referring request must be the request last fetched by the slave!
+                        if (!slave.lastFetchedRequest) {
+                            throw 'Internal error (code 2)';
+                        }
+                        if (request.referrerId !== slave.lastFetchedRequest.id) {
+                            throw `Some request in 'piggybackBufferedRequests' has invalid 'referrerId' property (index: ${i}, referrerId: ${request.referrerId}, lastFetchedRequest.id: ${slave.lastFetchedRequest.id}).`;
+                        }
+                    }
+
+                    requestsToAdd.push(request);
+                }
+
+                // Don't fetch next request until all new ones have been stored.
+                // Add requests sequentially to avoid overloading the API
+                for (const requestToAdd of requestsToAdd) {
+                    if (!this.isRunning) return;
+                    await this.pageManager.addNewPageRequest(requestToAdd, slave.id);
+                }
+            }
+
+            if (!this.isRunning) return;
+
+            // Process the message
+            switch (message.messageType) {
+                case 'fetchNextRequest':
+                    // if bootstrapping slave sent a 'fetchNextRequest' message, it means
+                    // that all startUrls were already requested and thus bootstrapping is finished
+                    if (slave.isBootstrapper && !this.isBootstrapFinished) {
+                        log.debug(`${LOG_PREFIX}Bootstrapping is finished (the bootstrapping slave process invoked 'fetchNextRequest')`);
+                        this.isBootstrapFinished = true;
+
+                        // Persist info that bootstrapping finished
+                        await this._persistState();
+
+                        // TODO: maybe we should send some signal to AutoscaledPool to run its heartbeat
+                        // to spawn the slaves ASAP
+                    }
+
+                    if (slave.isExited) break;
+
+                    const result = await this.pageManager.fetchNextRequest(slave.id);
+
+                    // Save proxy used for the request (it might be used from page function)
+                    if (result.request) {
+                        result.request.proxy = slave.proxy;
+                    }
+
+                    responseMessage.request = result.request;
+                    responseMessage.statusMessage = result.statusMessage;
+                    slave.lastFetchedRequest = result.request;
+                    // Slave might have exited in the meantime, ensure the fetched request will be handled by someone else!
+                    if (slave.isExited && result.request) {
+                        await this.pageManager.reclaimRequest(result.request);
+                    }
+                    break;
+
+                /* eslint-disable no-case-declarations */
+                case 'markRequestHandled':
+                    // eslint-disable-next-line prefer-destructuring
+                    request = message.request;
+                    if (!request) {
+                        throw "A 'markRequestHandled' message does not contain 'request' field.";
+                    }
+                    if (!slave.lastFetchedRequest || slave.lastFetchedRequest.id !== request.id) {
+                        throw `A 'markRequestHandled' message does not refer to the last fetched request (request.id: ${request.id}, lastFetchedRequest.id: ${slave.lastFetchedRequest ? slave.lastFetchedRequest.id : 'N/A'}).`;
+                    }
+                    if (request.referrer) {
+                        throw "The request defines the 'referrer' property; this is an error.";
+                    }
+
+                    fixLegacyRequestDates(request);
+
+                    // If the page load failed, retry it a few times and then give up
+                    // (don't update the request in database with data from crawler!)
+                    let errorInfoSuffix = null;
+                    if (request.loadErrorCode > 0 && this.input.maxPageRetryCount > 0) {
+                        slave.lastFetchedRequest._retryCount |= 0;
+                        if (slave.lastFetchedRequest._retryCount < this.input.maxPageRetryCount) {
+                            slave.lastFetchedRequest._retryCount++;
+                            log.info('Page load failed, it will be tried again later', {
+                                requestId: slave.lastFetchedRequest.id,
+                                retryCount: slave.lastFetchedRequest._retryCount,
+                                maxPageRetryCount: this.input.maxPageRetryCount,
+                            });
+                            await this.pageManager.reclaimRequest(slave.lastFetchedRequest, slave.id);
+                            slave.lastFetchedRequest = null;
+                            break;
+                        }
+                        log.warning('Page load failed too many times, giving up', {
+                            requestId: request.id,
+                            retryCount: slave.lastFetchedRequest._retryCount,
+                        });
+                        errorInfoSuffix = `\nPage load failed ${slave.lastFetchedRequest._retryCount + 1} times, giving up.`;
+                    }
+
+                    // only copy request fields that can be modified by slave between 'fetchNextRequest' and 'markRequestHandled' states !
+                    AFTER_LOAD_UPDATABLE_REQUEST_FIELDS.forEach((field) => {
+                        slave.lastFetchedRequest[field] = request[field];
+                    });
+                    request = slave.lastFetchedRequest;
+                    slave.lastFetchedRequest = null;
+                    if (errorInfoSuffix) {
+                        request.errorInfo += errorInfoSuffix;
+                        request._pageFailed = true;
+                    }
+
+                    // Mark the request as handled
+                    await this.pageManager.markRequestHandled(request, slave.id);
+                    break;
+
+                case 'saveSnapshot':
+                    // Crawler captured a screenshot to a file
+                    if (typeof message.screenshotFilename !== 'string') {
+                        throw "A 'saveSnapshot' message doesn't contain valid 'screenshotFilename' field.";
+                    }
+                    if (typeof message.htmlContent !== 'string') {
+                        throw "A 'saveSnapshot' message doesn't contain valid 'htmlContent' field.";
+                    }
+                    if (!utils.isNullOrUndefined(message.pageUrl) && typeof message.pageUrl !== 'string') {
+                        throw "A 'saveSnapshot' message doesn't contain valid 'pageUrl' field.";
+                    }
+                    log.debug('Received crawler snapshots in files', {
+                        screenshot: message.screenshotFilename,
+                        html: message.htmlFilename
+                    });
+                    const screenshotFilePath = path.join(this.tempDirPath, message.screenshotFilename);
+
+                    await this.liveViewServer.pushSnapshot(screenshotFilePath, message.htmlContent, message.pageUrl);
+                    break;
+
+                case 'dummy':
+                    // This message type is used when only passing piggybackBufferedRequests or for periodic pings
+                    break;
+
+                case 'saveCookies':
+                    const { cookies } = message;
+                    const cookiesJson = JSON.stringify(cookies, null, 2);
+                    const tmpFile = `${this.cookiesPath}_tmp_${Math.random().toString(36).slice(2)}`;
+
+                    log.info('Saving cookies', { cookiesCount: cookies.length });
+
+                    // Perform the operations in parallel
+                    const promises = [];
+
+                    // Update cookie file (using rename to be atomic).
+                    promises.push(async () => {
+                        await writeFilePromised(tmpFile, cookiesJson);
+                        await renamePromised(tmpFile, this.cookiesPath);
+                    });
+
+                    // Save cookies to actor task
+                    if (this.input.cookiesPersistence === COOKIES_PERSISTENCE.OVER_CRAWLER_RUNS) {
+                        promises.push(this._saveCookiesToActorTask(cookies));
+                    }
+
+                    // Save cookies to state, so they are reused on actor run restart or migration
+                    if (this.input.cookiesPersistence === COOKIES_PERSISTENCE.OVER_CRAWLER_RUNS
+                        || this.input.cookiesPersistence === COOKIES_PERSISTENCE.PER_CRAWLER_RUN) {
+                        this.persistedCookies = cookies;
+                        promises.push(this._persistState());
+                    }
+
+                    await Promise.all(promises);
+
+                    break;
+
+                /* eslint-enable no-case-declarations */
+                default:
+                    throw `An unknown message type received ('${message.messageType}')`;
+            }
+
+            if (!this.isRunning || slave.isExited) {
+                // If crawler shut down or slave exited in the meantime, don't bother with response
+                task.httpResponse.end();
+            } else {
+                // Tell crawler whether we want the screenshots or not.
+                // We're only doing screenshots in the slave with the lowest slave ID, to avoid overheads in highly parallel crawlers
+                const { minSlaveId } = this.probeSlaves();
+                responseMessage.shouldSaveSnapshots = slave.id === minSlaveId && this.liveViewServer.hasClients();
+
+                responseMessage.verboseLog = this.input.verboseLog;
+
+                task.httpResponse.writeHead(200, {
+                    Cache: 'no-cache',
+                    'Content-Type': 'application/json; charset=utf-8',
+                    Connection: 'keep-alive',
+                    'Keep-Alive': 'timeout=20, max=100',
+                });
+                task.httpResponse.end(JSON.stringify(responseMessage));
+            }
+        } catch (e) {
+            // For backwards compatibility with legacy Crawler, we log and ignore the errors
+            log.exception(e, 'Server failed to handle a request from slave', {
                 slaveId: slave.id,
                 messageType: message ? message.messageType : null,
                 request: _.pick(request, 'id', 'url'),
@@ -591,242 +812,9 @@ class PhantomCrawler {
                 task.httpResponse.writeHead(500);
                 task.httpResponse.end('Internal server error');
             } catch (e) {
-                // This one can be ignored
+                // Ignore this one
                 log.exception(e);
             }
-        };
-
-        // Check the piggybacked requests and store them to requestManager
-        if (message.piggybackBufferedRequests) {
-            if (!_.isArray(message.piggybackBufferedRequests)) {
-                return softFail("The 'piggybackBufferedRequests' field must be an array.");
-            }
-            const requestsToAdd = [];
-            for (let i = 0; i < message.piggybackBufferedRequests.length; i++) {
-                request = message.piggybackBufferedRequests[i];
-                fixLegacyRequestDates(request);
-                log.debug('Add new request', { request });
-
-                if (!request) {
-                    return softFail(`Some request in 'piggybackBufferedRequests' array is undefined (index: ${i}).`);
-                }
-                if (!utils.isNullOrUndefined(request.id)) {
-                    return softFail(`Some request in 'piggybackBufferedRequests' defines 'id' property; that is an error (index: ${i}, id: '${request.id}').`);
-                }
-                if (!utils.isNullOrUndefined(request.referrer)) {
-                    return softFail(`Some request in 'piggybackBufferedRequests' defines 'referrer' property; that is an error (index: ${i}, referrer.id: ${request.referrer.id}).`);
-                }
-
-                // if the slave is still bootstrapping...
-                if (slave.isBootstrapper && !this.isBootstrapFinished) {
-                    // ...then the request must be one of the bootstrap requests without any referrer
-                    if (slave.lastFetchedRequest) {
-                        return softFail('Internal error (code 1)');
-                    }
-                    if (!utils.isNullOrUndefined(request.referrerId)) {
-                        return softFail(`Some request in 'piggybackBufferedRequests' from bootsrapper defines referrerId (index: ${i}, referrerId: '${request.referrerId}').`);
-                    }
-                } else {
-                    // ...otherwise the referring request must be the request last fetched by the slave!
-                    if (!slave.lastFetchedRequest) {
-                        return softFail('Internal error (code 2)');
-                    }
-                    if (request.referrerId !== slave.lastFetchedRequest.id) {
-                        return softFail(`Some request in 'piggybackBufferedRequests' has invalid 'referrerId' property (index: ${i}, referrerId: ${request.referrerId}, lastFetchedRequest.id: ${slave.lastFetchedRequest.id}).`);
-                    }
-                }
-
-                requestsToAdd.push(request);
-            }
-
-            // Don't fetch next request until all new ones have been stored.
-            // Add requests sequentially to avoid overloading the API
-            for (const requestToAdd of requestsToAdd) {
-                if (!this.isRunning) return;
-                await this.pageManager.addNewPageRequest(requestToAdd, slave.id);
-            }
-        }
-
-        if (!this.isRunning) return;
-
-        // Process the message
-        switch (message.messageType) {
-            case 'fetchNextRequest':
-                // if bootstrapping slave sent a 'fetchNextRequest' message, it means
-                // that all startUrls were already requested and thus bootstrapping is finished
-                if (slave.isBootstrapper && !this.isBootstrapFinished) {
-                    log.debug(`${LOG_PREFIX}Bootstrapping is finished (the bootstrapping slave process invoked 'fetchNextRequest')`);
-                    this.isBootstrapFinished = true;
-
-                    // Persist info that bootstrapping finished
-                    await this._persistState();
-
-                    // TODO: maybe we should send some signal to AutoscaledPool to run its heartbeat
-                    // to spawn the slaves ASAP
-                }
-
-                if (slave.isExited) break;
-
-                const result = await this.pageManager.fetchNextRequest(slave.id);
-
-                // Save proxy used for the request (it might be used from page function)
-                if (result.request) {
-                    result.request.proxy = slave.proxy;
-                }
-
-                responseMessage.request = result.request;
-                responseMessage.statusMessage = result.statusMessage;
-                slave.lastFetchedRequest = result.request;
-                // Slave might have exited in the meantime, ensure the fetched request will be handled by someone else!
-                if (slave.isExited && result.request) {
-                    await this.pageManager.reclaimRequest(result.request);
-                }
-                break;
-
-            /* eslint-disable no-case-declarations */
-            case 'markRequestHandled':
-                // eslint-disable-next-line prefer-destructuring
-                request = message.request;
-                if (!request) {
-                    return softFail("A 'markRequestHandled' message does not contain 'request' field.");
-                }
-                if (!slave.lastFetchedRequest || slave.lastFetchedRequest.id !== request.id) {
-                    return softFail(`A 'markRequestHandled' message does not refer to the last fetched request (request.id: ${request.id}, lastFetchedRequest.id: ${slave.lastFetchedRequest ? slave.lastFetchedRequest.id : 'N/A'}).`);
-                }
-                if (request.referrer) {
-                    return softFail("The request defines the 'referrer' property; this is an error.");
-                }
-
-                fixLegacyRequestDates(request);
-
-                // If the page load failed, retry it a few times and then give up
-                // (don't update the request in database with data from crawler!)
-                let errorInfoSuffix = null;
-                if (request.loadErrorCode > 0 && this.input.maxPageRetryCount > 0) {
-                    slave.lastFetchedRequest._retryCount |= 0;
-                    if (slave.lastFetchedRequest._retryCount < this.input.maxPageRetryCount) {
-                        slave.lastFetchedRequest._retryCount++;
-                        log.info('Page load failed, it will be tried again later', {
-                            requestId: slave.lastFetchedRequest.id,
-                            retryCount: slave.lastFetchedRequest._retryCount,
-                            maxPageRetryCount: this.input.maxPageRetryCount,
-                        });
-                        await this.pageManager.reclaimRequest(slave.lastFetchedRequest, slave.id);
-                        slave.lastFetchedRequest = null;
-                        break;
-                    }
-                    log.warning('Page load failed too many times, giving up', {
-                        requestId: request.id,
-                        retryCount: slave.lastFetchedRequest._retryCount,
-                    });
-                    errorInfoSuffix = `\nPage load failed ${slave.lastFetchedRequest._retryCount + 1} times, giving up.`;
-                }
-
-                // only copy request fields that can be modified by slave between 'fetchNextRequest' and 'markRequestHandled' states !
-                AFTER_LOAD_UPDATABLE_REQUEST_FIELDS.forEach((field) => {
-                    slave.lastFetchedRequest[field] = request[field];
-                });
-                request = slave.lastFetchedRequest;
-                slave.lastFetchedRequest = null;
-                if (errorInfoSuffix) {
-                    request.errorInfo += errorInfoSuffix;
-                    request._pageFailed = true;
-                }
-
-                // Mark the request as handled
-                await this.pageManager.markRequestHandled(request, slave.id);
-                break;
-
-            case 'saveSnapshot':
-                // Crawler captured a screenshot to a file
-                if (typeof message.screenshotFilename !== 'string') {
-                    return softFail("A 'saveSnapshot' message doesn't contain valid 'screenshotFilename' field.");
-                }
-                if (typeof message.htmlContent !== 'string') {
-                    return softFail("A 'saveSnapshot' message doesn't contain valid 'htmlContent' field.");
-                }
-                if (!utils.isNullOrUndefined(message.pageUrl) && typeof message.pageUrl !== 'string') {
-                    return softFail("A 'saveSnapshot' message doesn't contain valid 'pageUrl' field.");
-                }
-                log.debug('Received crawler snapshots in files', { screenshot: message.screenshotFilename, html: message.htmlFilename });
-                const screenshotFilePath = path.join(this.tempDirPath, message.screenshotFilename);
-
-                await this.liveViewServer.pushSnapshot(screenshotFilePath, message.htmlContent, message.pageUrl);
-                break;
-
-            case 'dummy':
-                // This message type is used when only passing piggybackBufferedRequests or for periodic pings
-                break;
-
-            case 'saveCookies':
-                const { cookies } = message;
-                const cookiesJson = JSON.stringify(cookies, null, 2);
-                const tmpFile = `${this.cookiesPath}_tmp_${Math.random().toString(36).slice(2)}`;
-
-                log.info('Overriding cookies', { cookiesCount: cookies.length });
-
-                // TODO: Some of these operations can be done in parallel
-
-                // Update cookie file (using rename to be atomic).
-                await writeFilePromised(tmpFile, cookiesJson);
-                await renamePromised(tmpFile, this.cookiesPath);
-
-                // Save cookies to actor task
-                if (this.input.cookiesPersistence === COOKIES_PERSISTENCE.OVER_CRAWLER_RUNS) {
-                    const taskId = process.env.APIFY_ACTOR_TASK_ID;
-
-                    // This happens locally or if run outside of actor task!
-                    if (!taskId) {
-                        log.warning('APIFY_ACTOR_TASK_ID environment variable is not set, skipping cookies synchronization');
-                        return;
-                    }
-
-                    log.debug('Updating cookies in actor task to support OVER_CRAWLER_RUNS cookie persistence', { actorTaskId: taskId, cookiesCount: cookies.length });
-
-                    try {
-                        const { input } = await Apify.client.tasks.getTask({ taskId });
-                        const parsedInputBody = JSON.parse(input.body);
-                        parsedInputBody.cookies = cookies;
-                        input.body = JSON.stringify(parsedInputBody, null, 2);
-                        await Apify.client.tasks.updateTask({ taskId, task: { input } });
-                    } catch (err) {
-                        log.exception(err, 'Failed to save cookies to actor task', { actorTaskId: taskId, cookiesCount: cookies.length });
-                        return;
-                    }
-                }
-
-                // Save cookies to state, so they are reused on actor run migration
-                if (this.input.cookiesPersistence === COOKIES_PERSISTENCE.OVER_CRAWLER_RUNS
-                    || this.input.cookiesPersistence === COOKIES_PERSISTENCE.PER_CRAWLER_RUN) {
-                    this.persistedCookies = cookies;
-                    await this._persistState();
-                }
-
-                break;
-
-            /* eslint-enable no-case-declarations */
-            default:
-                return softFail(`An unknown message type received ('${message.messageType}')`);
-        }
-
-        if (!this.isRunning || slave.isExited) {
-            // If crawler shut down or slave exited in the meantime, don't bother with response
-            task.httpResponse.end();
-        } else {
-            // Tell crawler whether we want the screenshots or not.
-            // We're only doing screenshots in the slave with the lowest slave ID, to avoid overheads in highly parallel crawlers
-            const { minSlaveId } = this.probeSlaves();
-            responseMessage.shouldSaveSnapshots = slave.id === minSlaveId && this.liveViewServer.hasClients();
-
-            responseMessage.verboseLog = this.input.verboseLog;
-
-            task.httpResponse.writeHead(200, {
-                Cache: 'no-cache',
-                'Content-Type': 'application/json; charset=utf-8',
-                Connection: 'keep-alive',
-                'Keep-Alive': 'timeout=20, max=100',
-            });
-            task.httpResponse.end(JSON.stringify(responseMessage));
         }
 
         // Handle next task
@@ -850,6 +838,18 @@ class PhantomCrawler {
             isBootstrapFinished: this.isBootstrapFinished,
             persistedCookies: this.persistedCookies,
         });
+    }
+
+    async _saveCookiesToActorTask(cookies) {
+        log.debug('Updating cookies in actor task to support OVER_CRAWLER_RUNS cookie persistence', { actorTaskId: this.actorTaskId, cookiesCount: cookies.length });
+
+        // TODO: Unfortunately, this operation is not atomic, so it might happen that changes in task input configuration
+        // saved between the get and update operations will be lost. Without better API, we can't do anything about it...
+        const { input } = await Apify.client.tasks.getTask({ taskId: this.actorTaskId });
+        const parsedInputBody = JSON.parse(input.body);
+        parsedInputBody.cookies = cookies;
+        input.body = JSON.stringify(parsedInputBody, null, 2);
+        await Apify.client.tasks.updateTask({ taskId: this.actorTaskId, task: { input } });
     }
 
     /**
@@ -968,7 +968,7 @@ class PhantomCrawler {
         log.debug(`PhantomCrawler: Spawning slave process`, { slaveId, fullCmd });
         const options = {
             cwd: this.tempDirPath,
-            // For security, only pass a few selected environment variables to PhantomJS
+            // For increased security, only pass a few selected environment variables to PhantomJS
             env: _.pick(process.env, 'HOME', 'HOSTNAME', 'OLDPWD', 'LANG', 'PATH', 'SHELL', 'SHLVL', 'TERM'),
         };
         let childProcess;

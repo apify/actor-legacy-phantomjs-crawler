@@ -874,7 +874,7 @@ Crawler.prototype.onNavigationRequestedImpl = function onNavigationRequested(opt
 
 		// invoke 'interceptRequest' function and update newRequest with its result
 		if( this.config.interceptRequest ) {
-			utils.log("Crawler.onNavigationRequested(): Invoking user-provided 'interceptRequest' function.", "debug");
+			// utils.log("Crawler.onNavigationRequested(): Invoking user-provided 'interceptRequest' function.", "debug");
 			try {
 				var result = crawlerUtils.invokeUserFunction(this.webPage, this.config.interceptRequest, newRequest.explicitToJSON(true));
 				if( result !== null ) {
@@ -896,10 +896,15 @@ Crawler.prototype.onNavigationRequestedImpl = function onNavigationRequested(opt
 					// only copy certain fields to newRequest, in order to preserve important
 					// and non-stringifyable fields of the original newRequest object
 					var logResult = {};
+					var somethingChanged = false;
 					requests.INTERCEPTABLE_REQUEST_FIELDS.forEach(function(field) {
+					    if (newRequest[field] !== result[field]) somethingChanged = true;
 						logResult[field] = newRequest[field] = result[field];
 					});
-					utils.log("Crawler.onNavigationRequested(): User-provided 'interceptRequest' function returned a result:\n" + JSON.stringify(logResult, undefined, 2), "debug");
+					if (somethingChanged) {
+					    // Only log this if something changed, otherwise debug log is just too fast and large
+                        utils.log("Crawler.onNavigationRequested(): User-provided 'interceptRequest' function returned a modified result:\n" + JSON.stringify(logResult, undefined, 2), "debug");
+                    }
 				} else {
 					utils.log("Crawler.onNavigationRequested(): User-provided 'interceptRequest' function returned null and thus canceled the request, continuing.", "debug");
 					return;

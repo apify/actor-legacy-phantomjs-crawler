@@ -351,7 +351,7 @@
       "type": "string",
       "nullable": true,
       "maxLength": 1000,
-      "description": "An HTTP endpoint that receives a POST request right after every run of this actor finishes. The POST payload is a JSON object that has the following structure: <code>{ taskId: String, runId: String, data: String }</code>.<br><br>Note that this field is only kept for backwards compatibility and it uses the <a href='https://apify.com/docs/webhooks'>Apify Webhooks</a> infrastructure.",
+      "description": "An HTTP endpoint that receives a POST request right after the run of this actor finishes. The POST payload is a JSON object with the following properties: <code>actorId</code>, <code>runId</code>, <code>taskId</code>, <code>datasetId</code> and <code>data</code><br><br>For more information about finish webhook, please see the actor README.",
       "editor": "textfield"
     },
 
@@ -360,8 +360,8 @@
       "type": "string",
       "nullable": true,
       "maxLength": 10000,
-      "description": "Custom string that is sent in the POST payload of the finish webhook HTTP request, under the <code>data</code> property.",
-      "editor": "textarea"
+      "description": "Custom string that is sent in the POST payload to <b>Finish webhook URL</b>, as the <code>data</code> property.",
+      "editor": "textfield"
     }
   },
   "required": [ "startUrls" ]

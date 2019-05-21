@@ -67,9 +67,12 @@ const COOKIES_PERSISTENCE = {
     OVER_CRAWLER_RUNS: 'OVER_CRAWLER_RUNS',
 };
 
+const MAX_COOKIES_JSON_LENGTH = 250000;
+
 // Should be value between 0 and 1000
 const PHANTOMJS_OOM_SCORE_ADJ = 100;
 
+const readFilePromised = util.promisify(fs.readFile);
 const writeFilePromised = util.promisify(fs.writeFile);
 const renamePromised = util.promisify(fs.rename);
 
@@ -310,7 +313,7 @@ class PhantomCrawler {
         if (this.isRunning) throw new Error('Crawler is already running');
         this.isRunning = true;
 
-        // Run things in parallel to speed this up
+        // Run things in parallel to speed them up
         await Promise.all([
             this.pageManager.initialize(),
             this.liveViewServer.start(),
@@ -381,6 +384,28 @@ class PhantomCrawler {
         _.each(this.slaves, (slave) => {
             slave.childProcess.kill('SIGKILL');
         });
+
+        // Save cookies to actor task if requested
+        if (this.input.cookiesPersistence === COOKIES_PERSISTENCE.OVER_CRAWLER_RUNS) {
+            try {
+                const data = readFilePromised(this.cookiesPath, 'utf8');
+                if (data.length > MAX_COOKIES_JSON_LENGTH) {
+                    throw new Error(`The "cookies.json" file is too large (was: ${data.length}, limit: ${MAX_COOKIES_JSON_LENGTH})`);
+                }
+                const cookies = JSON.parse(data);
+                if (!_.isArray(cookies)) {
+                    throw new Error('The "cookies.json" file doesn\'t contain a JSON array');
+                }
+                await this._saveCookiesToActorTask(cookies);
+            } catch (e) {
+                // The cookies.json file might not exist at all
+                if (e.code === 'ENOENT') {
+                    log.info('Crawl left no "cookies.json" file, saved cookies will be empty');
+                } else {
+                    log.exception(e, 'Failed to read "cookies.json" file or save cookies to task', { actorTaskId: this.actorTaskId, cookiesCount: cookies ? cookies.length : null });
+                }
+            }
+        }
     }
 
     async _pauseOnMigration() {

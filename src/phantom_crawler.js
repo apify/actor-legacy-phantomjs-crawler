@@ -386,14 +386,15 @@ class PhantomCrawler {
         });
 
         // Save cookies to actor task if requested
+        let fileData;
         let cookies;
         if (this.input.cookiesPersistence === COOKIES_PERSISTENCE.OVER_CRAWLER_RUNS) {
             try {
-                const data = readFilePromised(this.cookiesPath, 'utf8');
-                if (data.length > MAX_COOKIES_JSON_LENGTH) {
+                fileData = readFilePromised(this.cookiesPath, 'utf8');
+                if (fileData.length > MAX_COOKIES_JSON_LENGTH) {
                     throw new Error(`The "cookies.json" file is too large (was: ${data.length}, limit: ${MAX_COOKIES_JSON_LENGTH})`);
                 }
-                cookies = JSON.parse(data);
+                cookies = JSON.parse(fileData);
                 if (!_.isArray(cookies)) {
                     throw new Error('The "cookies.json" file doesn\'t contain a JSON array');
                 }
@@ -403,7 +404,7 @@ class PhantomCrawler {
                 if (e.code === 'ENOENT') {
                     log.info('Crawl left no "cookies.json" file, saved cookies will be empty');
                 } else {
-                    log.exception(e, 'Failed to read "cookies.json" file or save cookies to task', { actorTaskId: this.actorTaskId, cookiesCount: cookies ? cookies.length : null });
+                    log.exception(e, 'Failed to read "cookies.json" file or save cookies to task', { actorTaskId: this.actorTaskId, cookiesCount: cookies ? cookies.length : null, fileData });
                 }
             }
         }
@@ -521,13 +522,6 @@ class PhantomCrawler {
                     await this.pageManager.markRequestHandled(request, slave.id);
                 }
             }
-
-            // Adjust the OOM killer score for PhantomJS processes, so they are the first ones
-            // to get killed when the system is running out of memory
-            fs.writeFile(`/proc/${slave.pid}/oom_score_adj`, PHANTOMJS_OOM_SCORE_ADJ, (err) => {
-                if (err) log.debug('Failed to adjust OOM killer score for PhantomJS process', { errMsg: err.message });
-            });
-
         } catch (e) {
             this.fatalError(e);
         }
@@ -1025,6 +1019,12 @@ class PhantomCrawler {
         this.slaves[slaveId] = slave;
         slave.proxy = proxyPublicInfo;
         slave.fullCmd = fullCmd;
+
+        // Adjust the OOM killer score for PhantomJS processes, so they are the first ones
+        // to get killed when the container is running out of memory
+        fs.writeFile(`/proc/${slave.pid}/oom_score_adj`, PHANTOMJS_OOM_SCORE_ADJ, (err) => {
+            if (err) log.debug('Failed to adjust OOM killer score for PhantomJS process', { errMsg: err.message });
+        });
 
         // log.debug('PhantomCrawler: Slave process spawned', { slaveId, pid: slave.pid });
 

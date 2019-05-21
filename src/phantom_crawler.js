@@ -138,6 +138,7 @@ const inputToConfig = (input) => {
 
     config.actorRunId = process.env.APIFY_ACTOR_RUN_ID || null;
     config.actorTaskId = process.env.APIFY_ACTOR_TASK_ID || null;
+    config.saveCookies = input.cookiesPersistence === COOKIES_PERSISTENCE.PER_CRAWLER_RUN || input.cookiesPersistence === COOKIES_PERSISTENCE.OVER_CRAWLER_RUNS;
 
     // log.debug('Converted input to crawler configuration', { input, config });
 
@@ -398,7 +399,7 @@ class PhantomCrawler {
                 if (!_.isArray(cookies)) {
                     throw new Error('The "cookies.json" file doesn\'t contain a JSON array');
                 }
-                log.info('Saving cookies from crawler to actor task to support OVER_CRAWLER_RUNS cookie persistence', { actorTaskId: this.actorTaskId, cookiesCount: cookies.length });
+                log.info('Saving cookies from crawler to actor task, because of the OVER_CRAWLER_RUNS cookie persistence setting', { actorTaskId: this.actorTaskId, cookiesCount: cookies.length });
                 await this._saveCookiesToActorTask(cookies);
             } catch (e) {
                 // The cookies.json file might not exist at all
@@ -784,7 +785,7 @@ class PhantomCrawler {
 
                     // Save cookies to actor task
                     if (this.input.cookiesPersistence === COOKIES_PERSISTENCE.OVER_CRAWLER_RUNS) {
-                        log.info('Saving cookies from page function to actor task to support OVER_CRAWLER_RUNS cookie persistence.', { actorTaskId: this.actorTaskId, cookiesCount: cookies.length });
+                        log.info('Saving cookies from page function to actor task, because of the OVER_CRAWLER_RUNS cookie persistence setting.', { actorTaskId: this.actorTaskId, cookiesCount: cookies.length });
                         promises.push(this._saveCookiesToActorTask(cookies));
                     }
 

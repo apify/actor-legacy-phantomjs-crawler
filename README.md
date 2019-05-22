@@ -35,6 +35,9 @@ Note that there are several differences between this actor and legacy Apify Craw
   most likely producing invalid results.
   It is recommended to use the new **Proxy configuration** (`proxyConfiguration`)
   field instead, which is correctly validated before the actor is started.
+  Beware that **Custom proxies** in the new **Proxy configuration** no longer support SOCKS5 proxies,
+  and they only accept HTTP proxies. If you need SOCKS5,
+  please contact [support@apify.com](mailto:support@apify.com)  
 - The **Test URL** feature is not supported.
 - The crawling results are stored into an Apify dataset instead of the specialized
   storage for crawling results used by the old Crawler.

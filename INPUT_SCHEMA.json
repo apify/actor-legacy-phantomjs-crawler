@@ -42,7 +42,7 @@
             "title": "Clickable elements",
             "type": "string",
             "nullable": true,
-            "description": "CSS selector used to find links to other web pages. Leave empty to ignore all links.",
+            "description": "CSS selector used to find links to other web pages. Leave empty to ignore all links.<br><br>For example: <code>a[href]</code>",
             "editor": "textfield",
             "prefill": "a:not([rel=nofollow])"
         },

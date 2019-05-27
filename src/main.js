@@ -13,7 +13,7 @@ Apify.main(async () => {
 
     // Set up finish webhook
     if (input.finishWebhookUrl) {
-        await Apify.addWebhook({
+        const webhook = await Apify.addWebhook({
             requestUrl: input.finishWebhookUrl,
             eventTypes: [
                 'ACTOR.RUN.SUCCEEDED',
@@ -35,6 +35,7 @@ Apify.main(async () => {
     "data": ${JSON.stringify(input.finishWebhookData || null)}
 }`,
         });
+        log.info('Added finish webhook', { webhook: _.pick(webhook, 'id', 'idempotencyKey', 'requestUrl') });
     }
 
     const requestQueue = await Apify.openRequestQueue();

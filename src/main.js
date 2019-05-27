@@ -1,3 +1,4 @@
+const _ = require('underscore');
 const Apify = require('apify');
 const PhantomCrawler = require('./phantom_crawler');
 

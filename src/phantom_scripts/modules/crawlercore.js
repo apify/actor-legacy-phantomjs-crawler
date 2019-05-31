@@ -1012,7 +1012,7 @@ Crawler.prototype.handleNextRequest = function handleNextRequest() {
 		// (we're using a callback function because this action might require access to server)
 		this.requestManager.fetchNextRequest( function handleNextRequest_callback(request, statusMessage) {
 			if( !request ) {
-				utils.log("Crawling process is finished: " + statusMessage);
+				utils.log("PhantomJS process is finished: " + statusMessage);
 				this.exit();
 				return;
 			}
@@ -1104,7 +1104,7 @@ Crawler.prototype.handleNextRequest = function handleNextRequest() {
  * Beware that the function might return immediately and continue in background!
  */
 Crawler.prototype.exit = function exit() {
-	utils.log("Shutting down the crawling process and PhantomJS...");
+	utils.log("Shutting down PhantomJS process...");
 	this.requestManager.close( function() {
         // don't call forceExit() immediately, so that log messages are flushed to stdout
         // also it seems that PhantomJS is more likely to crash without setTimeout()

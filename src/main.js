@@ -29,9 +29,9 @@ Apify.main(async () => {
             // Note that ACTOR_TASK_ID might be undefined if not running in an actor task,
             // other fields can undefined when running this locally
             payloadTemplate: `{
-    "actorId": ${JSON.stringify(process.env.ACTOR_ID || null)},
-    "taskId": ${JSON.stringify(process.env.ACTOR_TASK_ID || null)},
-    "runId": ${JSON.stringify(process.env.ACTOR_RUN_ID || null)},
+    "actorId": ${JSON.stringify(process.env.APIFY_ACTOR_ID || null)},
+    "taskId": ${JSON.stringify(process.env.APIFY_ACTOR_TASK_ID || null)},
+    "runId": ${JSON.stringify(process.env.APIFY_ACTOR_RUN_ID || null)},
     "datasetId": ${JSON.stringify(process.env.APIFY_DEFAULT_DATASET_ID || null)},
     "data": ${JSON.stringify(input.finishWebhookData || null)}
 }`,

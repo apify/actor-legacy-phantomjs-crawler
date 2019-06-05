@@ -10,6 +10,10 @@ Therefore, for new projects, we recommend that you use the Web Scraper
 ([`apify/web-scraper`](https://apify.com/apify/web-scraper)) actor,
 which provides similar functionality, but is based on the modern headless Chrome browser.
 
+<!-- TODO:
+For more details on how to migrate your crawlers to this actor, please see our blog post.
+-->
+
 ## Compatibility with legacy Apify Crawler
 
 Apify Crawler used to be a core product of Apify, but in April 2019 it was deprecated in favor of the more general
@@ -44,10 +48,6 @@ Note that there are several differences between this actor and legacy Apify Craw
   The dataset supports most of the legacy API query parameters
   in order to emulate the same results format. However, there might be some small
   incompatibilities. For details, see [Crawling results](#crawling-results).
-
-<!-- TODO:
-For more details on how to migrate your crawlers to this actor, please see our blog post.
--->
 
 ## Overview
 

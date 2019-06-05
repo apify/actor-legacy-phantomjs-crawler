@@ -6,8 +6,8 @@ crawl websites and extract data from them using front-end JavaScript code.
 
 Note that PhantomJS is no longer being developed by the community
 and might be easily detected and blocked by target websites.
-Therefore, for new projects, we recommend that you use the
-[`apify/web-scraper`](https://apify.com/apify/web-scraper) actor,
+Therefore, for new projects, we recommend that you use the Web Scraper
+([`apify/web-scraper`](https://apify.com/apify/web-scraper)) actor,
 which provides similar functionality, but is based on the modern headless Chrome browser.
 
 ## Compatibility with legacy Apify Crawler

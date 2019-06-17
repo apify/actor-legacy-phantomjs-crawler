@@ -10,9 +10,8 @@ Therefore, for new projects, we recommend that you use the Web Scraper
 ([`apify/web-scraper`](https://apify.com/apify/web-scraper)) actor,
 which provides similar functionality, but is based on the modern headless Chrome browser.
 
-<!-- TODO:
-For more details on how to migrate your crawlers to this actor, please see our blog post.
--->
+For more details on how to migrate your crawlers to this actor,
+please read this <a href="https://blog.apify.com/apify-crawler-to-be-replaced-by-apify-actors-c67df1366e00">blog post</a>.
 
 ## Compatibility with legacy Apify Crawler
 

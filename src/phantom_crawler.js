@@ -866,11 +866,18 @@ class PhantomCrawler {
     async _saveCookiesToActorTask(cookies) {
         // TODO: Unfortunately, this operation is not atomic, so it might happen that changes in task input configuration
         // saved between the get and update operations will be lost. Without better API, we can't do anything about it...
+        // NOTE: This ^ problem will get fixed by using Apify.client.tasks.updateInput which updates just one field.
         const { input } = await Apify.client.tasks.getTask({ taskId: this.actorTaskId });
-        const parsedInputBody = JSON.parse(input.body);
+        // TODO: Ternary operator is here because of planned actor task API change. We change is proceed then we can use
+        // latter version.
+        const parsedInputBody = input.body
+            ? JSON.parse(input.body)
+            : input;
         parsedInputBody.cookies = cookies;
         input.body = JSON.stringify(parsedInputBody, null, 2);
         await Apify.client.tasks.updateTask({ taskId: this.actorTaskId, task: { input } });
+        // TODO: Once new version of API is deployed use this instead of line above:
+        // await Apify.client.tasks.updateInput({ taskId: this.actorTaskId, input: { cookies } });
     }
 
     /**

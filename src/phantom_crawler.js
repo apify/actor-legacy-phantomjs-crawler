@@ -875,9 +875,7 @@ class PhantomCrawler {
             : input;
         parsedInputBody.cookies = cookies;
         input.body = JSON.stringify(parsedInputBody, null, 2);
-        await Apify.client.tasks.updateTask({ taskId: this.actorTaskId, task: { input } });
-        // TODO: Once new version of API is deployed use this instead of line above:
-        // await Apify.client.tasks.updateInput({ taskId: this.actorTaskId, input: { cookies } });
+        await Apify.client.tasks.updateInput({ taskId: this.actorTaskId, input: { cookies } });
     }
 
     /**

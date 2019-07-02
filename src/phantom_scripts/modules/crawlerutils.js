@@ -578,14 +578,21 @@ exports.injectRequestObject = function injectRequestObject(page, request, custom
                 // make sure this is not called when pageFunction is still executing, otherwise it causes that
                 // findClickableElements() function is called inside pageFunction, causing weird effects
                 // NOTE: we use JSON.stringify() because PhantomJS would otherwise convert null values to string !!!
-                setTimeout( function() {
-                    window.callPhantom(jsonStringify({
+                try {
+                    var json = jsonStringify({
                         messageType: "PAGE_FUNCTION_FINISHED",
                         requestId: requestId, // to ensure the call corresponds to the current request
                         pageFunctionResult: result,
                         userFlags: userFlags // to speed things up
-                    }));
-                }, 0);
+                    });
+                    setTimeout(function() {
+                        window.callPhantom(json);
+                    }, 0);
+                } catch (e) {
+                    // Print some info about this error to console, so that users can fix it
+                    console.log("The object passed to context.finish() cannot be stringified to JSON: " + e.message);
+                    throw e;
+                }
             } else {
                 // TODO: log warning and handle this situation, but first wait until this really happens!
 				alert("WARNING: web page destroyed window.callPhantom !?!");

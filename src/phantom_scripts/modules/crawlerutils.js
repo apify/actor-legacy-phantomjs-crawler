@@ -590,7 +590,8 @@ exports.injectRequestObject = function injectRequestObject(page, request, custom
                     }, 0);
                 } catch (e) {
                     // Print some info about this error to console, so that users can fix it
-                    console.log("The object passed to context.finish() cannot be stringified to JSON: " + e.message);
+                    // Yes, this is a hack, we don't have any other way here to log error to user
+                    console.log("ERROR: The object passed to context.finish() cannot be stringified to JSON: " + e.message);
                     throw e;
                 }
             } else {

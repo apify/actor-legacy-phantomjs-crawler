@@ -34,9 +34,6 @@ const SAFE_MIGRATION_WAIT_MILLIS = 20000;
 
 const INITIAL_SLAVE_ID = 1;
 
-const DEFAULT_MAX_CONCURRENCY = 100;
-const DEFAULT_MAX_PAGE_RETRY_COUNT = 3;
-
 const DEFAULT_EXECUTOR_HEARTBEAT_MILLIS = 5 * 1000;
 
 const PHANTOMJS_COMMAND = 'phantomjs';
@@ -168,11 +165,6 @@ class PhantomCrawler {
             this.input.clickableElementsSelector = 'DONT_CLICK_ANYTHING';
         }
 
-        // Enforce some value here, otherwise on page error the crawler might run infinitely
-        if (typeof this.input.maxPageRetryCount !== 'number') {
-            this.input.maxPageRetryCount = DEFAULT_MAX_PAGE_RETRY_COUNT;
-        }
-
         // Convert legacy proxy input settings to new proxyConfiguration object.
         // Note that new proxyConfiguration has priority over the legacy settings.
         if (!this.proxyConfiguration) {
@@ -277,7 +269,7 @@ class PhantomCrawler {
 
         this.autoscaledPoolOptions = {
             minConcurrency: 1,
-            maxConcurrency: input.maxParallelRequests || DEFAULT_MAX_CONCURRENCY,
+            maxConcurrency: input.maxParallelRequests,
             runTaskFunction: this._runTaskFunction.bind(this),
             isTaskReadyFunction: async () => {
                 // During bootstrapping, the queue is empty, but we still need to run a task

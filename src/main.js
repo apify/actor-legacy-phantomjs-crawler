@@ -1,6 +1,7 @@
 const _ = require('underscore');
 const Apify = require('apify');
 const PhantomCrawler = require('./phantom_crawler');
+const inputSchema = require('../INPUT_SCHEMA.json');
 
 const { log } = Apify.utils;
 
@@ -11,6 +12,15 @@ Apify.main(async () => {
     if (input.verboseLog) {
         log.setLevel(log.LEVELS.DEBUG);
     }
+
+    // WORKAROUND: The legacy Apify Crawler product used to enforce default values for the following fields,
+    // even if the user passed null value via API. Since passing null value for actors doesn't enforce
+    // the default value from input schema, we need to do it here explicitly, in order to provide consistent behavior
+    // (and avoid hanging actor runs!)
+    // Additionally, we do this for "maxPageRetryCount", otherwise on page error the crawler might run infinitely.
+    ['timeout', 'maxCrawledPagesPerSlave', 'randomWaitBetweenRequests', 'pageLoadTimeout', 'pageFunctionTimeout', 'maxParallelRequests', 'maxPageRetryCount'].forEach((key) => {
+        if (typeof input[key] !== 'number') input[key] = inputSchema.properties[key].default;
+    });
 
     // Set up finish webhook
     if (input.finishWebhookUrl) {

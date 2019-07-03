@@ -244,7 +244,7 @@
             "title": "Max page retries",
             "type": "integer",
             "nullable": true,
-            "description": "The maximum number of times the crawler will retry to load a page on error.",
+            "description": "The maximum number of times the crawler will retry to open a web page on load error. Note that on page function errors, the pages are not retried.",
             "minimum": 0,
             "maximum": 10,
             "default": 3

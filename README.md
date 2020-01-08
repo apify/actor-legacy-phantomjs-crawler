@@ -22,7 +22,7 @@ in order to enable users to seamlessly migrate their crawlers.
 Note that there are several differences between this actor and legacy Apify Crawler:
 
 - The **Cookies persistence** setting of **Over all crawler runs**
-  is only supported when running the actor as a [task](https://apify.com/docs/tasks).
+  is only supported when running the actor as a [task](https://docs.apify.com/tasks).
   When you run the actor directly and use this setting,
   the actor will fail and print an error to the log.
 - In **Page function**, the `context` object passed to the function has slightly different properties:
@@ -211,7 +211,7 @@ The function can return an arbitrary JavaScript object (including array, string,
 this value will be saved in the crawling results, as the <code>pageFunctionResult</code>
 field of the <a href="#request-object">Request object</a> corresponding to the web page
 on which the <code>pageFunction</code> was executed.
-The crawling results are stored in the default [dataset](https://apify.com/docs/storage#dataset)
+The crawling results are stored in the default [dataset](https://docs.apify.com/storage#dataset)
 associated with the actor run, from where they can be downloaded
 in a computer-friendly form (JSON, JSONL, XML or RSS format),
 as well as in a human-friendly tabular form (HTML or CSV format).
@@ -350,7 +350,7 @@ which is an object with the following properties and functions:
     <tr>
         <td id="context-actorRunId"><code>actorRunId</code></td>
         <td>String containing ID of this actor run. It might be used to control
-            the actor using the <a href="http://apify.com/docs/api/v2">API</a>,
+            the actor using the <a href="https://docs.apify.com/api/v2">API</a>,
             e.g. to stop it or fetch its results.
         </td>
     </tr>
@@ -358,7 +358,7 @@ which is an object with the following properties and functions:
         <td id="context-actorRunId"><code>actorTaskId</code></td>
         <td>String containing ID of the actor task, or <code>null</code> if actor is run directly.
             The ID might be used to control
-            the task using the <a href="http://apify.com/docs/api/v2">API</a>.
+            the task using the <a href="https://docs.apify.com/api/v2">API</a>.
         </td>
     </tr>
     </tbody>
@@ -630,14 +630,14 @@ and its payload contains a JSON object with the following structure:
 ```
 
 You can use the `actorId` and `runId` fields to query the actor run status using 
-the [Get run](https://apify.com/docs/api/v2#/reference/actors/run-object/get-run) API endpoint.
+the [Get run](https://docs.apify.com/api/v2#/reference/actors/run-object/get-run) API endpoint.
 The `datasetId` field can be used to download the crawling results
-using the [Get dataset items](https://apify.com/docs/api/v2#/reference/datasets/item-collection/get-items)
+using the [Get dataset items](https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items)
 API endpoint - see [Crawling results](#crawling-results) below for more details.
 
 Note that the **Finish webhook URL** and **Finish webhook data** are provided merely for backwards compatibility 
 with the legacy Apify Crawler product, and the calls are performed using the Apify platform's standard webhook facility.
-For details, see [Webhooks](https://apify.com/docs/webhooks) in documentation.
+For details, see [Webhooks](https://docs.apify.com/webhooks) in documentation.
 
 To test your webhook endpoint, please create a new empty task for this actor,
 set the **Finish webhook URL** and run the task.
@@ -654,7 +654,7 @@ The array might be null or empty, in which case the crawler will start with no c
 
 Note that if the <a href="#cookies-persistence-option">Cookie persistence</a>
 setting is <b>Over all crawler runs</b> and the actor is started from within a
-<a href="https://apify.com/docs/tasks">task</a>
+<a href="https://docs.apify.com/tasks">task</a>
 the cookies array on the task will be overwritten
 with fresh cookies from the crawler whenever it successfully finishes.
 
@@ -743,7 +743,7 @@ For each web page visited, the crawler pushes a single
 [Request object](#requestObject) with all the details about the page into the dataset.
 
 To download the results, call the
-[Get dataset items](https://apify.com/docs/api/v2#/reference/datasets/item-collection)
+[Get dataset items](https://docs.apify.com/api/v2#/reference/datasets/item-collection)
 API endpoint:
 
 ```
@@ -808,7 +808,7 @@ The response will look like this:
 ```
 
 To get the results in other formats, set `format` query parameter to `xml`, `xlsx`, `csv`, `html`, etc.
-For full details, see the [Get dataset items](https://apify.com/docs/api/v2#/reference/datasets/item-collection)
+For full details, see the [Get dataset items](https://docs.apify.com/api/v2#/reference/datasets/item-collection)
 endpoint in API reference.
 
 To skip the records containing the `errorInfo` field from the results,

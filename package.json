@@ -8,7 +8,7 @@
 		"express": "^4.17.1",
 		"socket.io": "^2.3.0",
 		"tmp": "^0.1.0",
-		"underscore": "^1.9.1"
+		"underscore": "^1.12.1"
 	},
 	"devDependencies": {
 		"chai": "^4.2.0",

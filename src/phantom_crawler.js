@@ -2,6 +2,7 @@ const http = require('http');
 const util = require('util');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const _ = require('underscore');
 const tmp = require('tmp');
 const express = require('express');
@@ -40,6 +41,9 @@ const PHANTOMJS_COMMAND = 'phantomjs';
 
 // Let phantomjs use the lowest priority possible, to avoid blocking worker process
 const PHANTOMJS_SCHEDULING_PRIORITY = 39;
+
+// The base actor process (without PhantomJS children) uses 100 MB tops
+const BASE_PROCESS_ESTIMATED_MEMORY_BYTES = 100 * 1000 * 1000;
 
 // Upper estimate of a typical memory consumption of PhantomJS process (500 MB).
 const PHANTOMJS_PROCESS_ESTIMATED_MEMORY_BYTES = 500 * 1000 * 1000;
@@ -267,9 +271,18 @@ class PhantomCrawler {
         // Copy of cookies from the cookies.json that should were persisted by the crawler
         this.persistedCookies = null;
 
+        // Adjust AutoscaledPool's initial desiredConcurrency to speed up the start of crawling
+        const initialFreeMemoryEstimateBytes = process.env.APIFY_MEMORY_MBYTES
+            ? (process.env.APIFY_MEMORY_MBYTES * 1000 * 1000) - BASE_PROCESS_ESTIMATED_MEMORY_BYTES
+            : os.freemem();
+
+        let initialDesiredConcurrency = Math.max(1, Math.floor(initialFreeMemoryEstimateBytes / PHANTOMJS_PROCESS_ESTIMATED_MEMORY_BYTES));
+        if (input.maxParallelRequests) initialDesiredConcurrency = Math.min(initialDesiredConcurrency, input.maxParallelRequests);
+
         this.autoscaledPoolOptions = {
             minConcurrency: 1,
             maxConcurrency: input.maxParallelRequests,
+            desiredConcurrency: initialDesiredConcurrency,
             runTaskFunction: this._runTaskFunction.bind(this),
             isTaskReadyFunction: async () => {
                 // During bootstrapping, the queue is empty, but we still need to run a task
@@ -348,15 +361,6 @@ class PhantomCrawler {
                         }
                     })(),
                 ]);
-            })(),
-            (async () => {
-                // Adjust AutoscaledPool's desiredConcurrency to speed up the start of crawling
-                const memInfo = await Apify.getMemoryInfo();
-                const min = this.autoscaledPool.minConcurrency;
-                const max = this.autoscaledPool.maxConcurrency;
-                const desired = Math.max(Math.min(Math.floor(memInfo.freeBytes / PHANTOMJS_PROCESS_ESTIMATED_MEMORY_BYTES), max), min);
-                this.autoscaledPool.desiredConcurrency = desired;
-                log.info('Adjusted initial concurrency of the autoscaled pool', { min, max, desired, freeMbytes: Math.round(memInfo.freeBytes / (10 ** 6)) });
             })(),
         ]);
 

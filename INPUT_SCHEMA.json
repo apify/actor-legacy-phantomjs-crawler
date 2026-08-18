@@ -12,8 +12,24 @@
             "placeholderKey": "Optional label",
             "placeholderValue": "URL",
             "minItems": 1,
-            "patternKey": "^.{0,100}$",
-            "patternValue": "^([hH][tT][tT][pP]:\\/\\/|[hH][tT][tT][pP][sS]:\\/\\/)",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "title": "Label",
+                        "type": "string",
+                        "description": "Optional label of the URL.",
+                        "pattern": "^.{0,100}$"
+                    },
+                    "value": {
+                        "title": "URL",
+                        "type": "string",
+                        "description": "URL to be loaded by the crawler. Must start with http:// or https://.",
+                        "pattern": "^([hH][tT][tT][pP]:\\/\\/|[hH][tT][tT][pP][sS]:\\/\\/)"
+                    }
+                },
+                "required": ["value"]
+            },
             "prefill": [
                 {
                     "key": "START",
@@ -29,8 +45,24 @@
             "editor": "keyValue",
             "placeholderKey": "Optional label",
             "placeholderValue": "Pseudo-URL",
-            "patternKey": "^.{0,100}$",
-            "patternValue": "^([hH][tT][tT][pP]:\\/\\/|[hH][tT][tT][pP][sS]:\\/\\/)",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "title": "Label",
+                        "type": "string",
+                        "description": "Optional label of the URL.",
+                        "pattern": "^.{0,100}$"
+                    },
+                    "value": {
+                        "title": "Pseudo-URL",
+                        "type": "string",
+                        "description": "Pseudo-URL of pages to crawl. Must start with http:// or https://.",
+                        "pattern": "^([hH][tT][tT][pP]:\\/\\/|[hH][tT][tT][pP][sS]:\\/\\/)"
+                    }
+                },
+                "required": ["value"]
+            },
             "prefill": [
                 {
                     "key": "MY_LABEL",

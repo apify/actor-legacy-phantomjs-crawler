@@ -28,7 +28,7 @@
                         "pattern": "^([hH][tT][tT][pP]:\\/\\/|[hH][tT][tT][pP][sS]:\\/\\/)"
                     }
                 },
-                "required": ["key", "value"]
+                "required": ["value"]
             },
             "prefill": [
                 {
@@ -61,7 +61,7 @@
                         "pattern": "^([hH][tT][tT][pP]:\\/\\/|[hH][tT][tT][pP][sS]:\\/\\/)"
                     }
                 },
-                "required": ["key", "value"]
+                "required": ["value"]
             },
             "prefill": [
                 {
